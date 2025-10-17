@@ -142,7 +142,7 @@ export default function SDRDashboard() {
         .eq('status', 'convertido')
         .gte('created_at', inicioMes.toISOString())
 
-      const taxaConversao = leadsMes > 0 
+      const taxaConversao = leadsMes && leadsMes > 0
         ? Math.round(((leadsConvertidos?.length || 0) / leadsMes) * 100)
         : 0
 

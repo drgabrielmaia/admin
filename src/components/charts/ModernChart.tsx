@@ -174,13 +174,13 @@ export function ModernChart({ type, data, title, height = 300, className }: Mode
   const renderChart = () => {
     switch (type) {
       case 'line':
-        return <Line data={enhancedData} options={commonOptions} />
+        return <Line data={enhancedData} options={commonOptions as any} />
       case 'bar':
-        return <Bar data={enhancedData} options={commonOptions} />
+        return <Bar data={enhancedData} options={commonOptions as any} />
       case 'doughnut':
-        return <Doughnut data={enhancedData} options={commonOptions} />
+        return <Doughnut data={enhancedData} options={commonOptions as any} />
       default:
-        return <Line data={enhancedData} options={commonOptions} />
+        return <Line data={enhancedData} options={commonOptions as any} />
     }
   }
 

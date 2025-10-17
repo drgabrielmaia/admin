@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,24 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { 
-  DollarSign,
+import {
   TrendingUp,
   TrendingDown,
-  AlertTriangle,
-  Clock,
-  Target,
-  CreditCard,
-  Banknote,
-  Calendar,
-  Users,
-  FileText,
   PiggyBank,
   Plus,
   Edit,
   Trash2,
-  Building2,
-  Wallet,
   ArrowUpCircle,
   ArrowDownCircle
 } from 'lucide-react'
@@ -76,7 +65,7 @@ export default function BPOFinanceiroPage() {
   // Estados para formulários
   const [showFormMovimentacao, setShowFormMovimentacao] = useState(false)
   const [showFormConta, setShowFormConta] = useState(false)
-  const [editingItem, setEditingItem] = useState<any>(null)
+  const [editingItem, setEditingItem] = useState<{id: string; [key: string]: any} | null>(null)
   
   // Formulários
   const [formMovimentacao, setFormMovimentacao] = useState({
@@ -98,13 +87,7 @@ export default function BPOFinanceiroPage() {
     saldo_atual: ''
   })
 
-  useEffect(() => {
-    if (user?.funcao === 'admin') {
-      loadAllData()
-    }
-  }, [user])
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     setLoading(true)
     try {
       await Promise.all([
@@ -114,7 +97,13 @@ export default function BPOFinanceiroPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (user?.funcao === 'admin') {
+      loadAllData()
+    }
+  }, [user, loadAllData])
 
   const loadContas = async () => {
     try {
@@ -180,7 +169,7 @@ export default function BPOFinanceiroPage() {
       
       const faturamentoVendas = vendasMesAtual.reduce((sum, venda) => sum + (venda.valor || 0), 0)
       const custosVendas = vendasMesAtual.reduce((sum, venda) => {
-        const produto = venda.produtos as any
+        const produto = venda.produtos as {custo?: number} | null
         return sum + (produto?.custo || 0)
       }, 0)
       

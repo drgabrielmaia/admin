@@ -182,7 +182,7 @@ export default function CloserDashboard() {
 
       // Calcular métricas
       const ticketMedio = vendasMes && vendasMes > 0 ? faturamentoMes / vendasMes : 0
-      const taxaFechamento = chamadaMes && chamadaMes > 0 ? (vendasMes / chamadaMes) * 100 : 0
+      const taxaFechamento = chamadaMes && chamadaMes > 0 && vendasMes ? (vendasMes / chamadaMes) * 100 : 0
 
       // Carregar tempo médio de chamadas
       const { data: tempoMedioData } = await supabase

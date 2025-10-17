@@ -262,7 +262,7 @@ export function RankingBoard({ userRole }: RankingBoardProps) {
                         {item.nome}
                       </h3>
                       <BirthdayIcon 
-                        birthDate={item.data_nascimento} 
+                        birthDate={item.data_nascimento || null} 
                         userName={item.nome}
                         size="sm"
                       />

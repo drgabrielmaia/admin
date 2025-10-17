@@ -95,7 +95,7 @@ export function NovoLeadForm({ onSuccess, onCancel }: NovoLeadFormProps) {
       'fisico': '📦 Produto Físico',
       'parceria': '🤝 Parceria'
     }
-    return motores[tipo] || `📋 ${tipo}`
+    return (motores as any)[tipo] || `📋 ${tipo}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

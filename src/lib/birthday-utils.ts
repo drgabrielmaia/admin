@@ -121,8 +121,8 @@ export function getBirthdayInfo(birthDate: string | Date | null): BirthdayInfo {
     isBirthdayToday: isBirthdayToday(birthDate),
     isBirthdayThisWeek: isBirthdayThisWeek(birthDate),
     daysUntilBirthday: daysUntilBirthday(birthDate),
-    age: calculateAge(birthDate),
-    zodiacSign: getZodiacSign(birthDate)
+    age: calculateAge(birthDate) || undefined,
+    zodiacSign: getZodiacSign(birthDate) || undefined
   }
 }
 

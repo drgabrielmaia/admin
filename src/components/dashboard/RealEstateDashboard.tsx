@@ -19,6 +19,7 @@ import Link from 'next/link'
 interface RealEstateStats {
   total_imoveis: number
   imoveis_disponiveis: number
+  imoveis_em_negociacao: number
   imoveis_vendidos: number
   total_investido: number
   total_vendido: number
@@ -98,7 +99,7 @@ export function RealEstateDashboard() {
           .single()
 
         if (error) throw error
-        setStats(data)
+        setStats(data as RealEstateStats)
         console.log('✅ Dados da RPC:', data)
       } catch (rpcError) {
         console.log('⚠️ RPC não disponível, tentando view...')
@@ -114,6 +115,7 @@ export function RealEstateDashboard() {
           setStats({
             total_imoveis: 0,
             imoveis_disponiveis: 0,
+            imoveis_em_negociacao: 0,
             imoveis_vendidos: 0,
             total_investido: 0,
             total_vendido: 0,
@@ -136,6 +138,7 @@ export function RealEstateDashboard() {
       setStats({
         total_imoveis: 0,
         imoveis_disponiveis: 0,
+        imoveis_em_negociacao: 0,
         imoveis_vendidos: 0,
         total_investido: 0,
         total_vendido: 0,

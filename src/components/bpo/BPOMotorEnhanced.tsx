@@ -345,10 +345,10 @@ export function BPOMotorEnhanced({
         .eq('negocio', businessType)
         .order('data_movimento', { ascending: false })
 
-      let historico_processado = []
+      let historico_processado: any[] = []
       if (historico && historico.length > 0) {
         // Agrupar por mês
-        const groupedByMonth = historico.reduce((acc, mov) => {
+        const groupedByMonth = historico.reduce((acc: any, mov) => {
           const month = mov.data_movimento.substring(0, 7) // YYYY-MM
           if (!acc[month]) {
             acc[month] = {
@@ -1048,11 +1048,11 @@ export function BPOMotorEnhanced({
                             <span>{mov.conta_nome}</span>
                             <span>•</span>
                             <span>{formatDate(mov.data_movimento)}</span>
-                            {mov.metodo_pagamento && (
+                            {(mov as any).metodo_pagamento && (
                               <>
                                 <span>•</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {mov.metodo_pagamento.toUpperCase()}
+                                  {(mov as any).metodo_pagamento.toUpperCase()}
                                 </Badge>
                               </>
                             )}

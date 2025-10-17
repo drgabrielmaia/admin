@@ -132,16 +132,16 @@ export function VendasAprovacao() {
           id: lead.id,
           nome: lead.nome,
           status: lead.status,
-          produto: lead.produtos?.nome || 'SEM PRODUTO',
-          tipo: lead.produtos?.tipo || 'N/A'
+          produto: (lead.produtos as any)?.nome || 'SEM PRODUTO',
+          tipo: (lead.produtos as any)?.tipo || 'N/A'
         })
       })
 
       // Buscar nomes dos closers para as chamadas
-      let vendasFormatted = []
+      let vendasFormatted: any[] = []
       if (chamadasData && chamadasData.length > 0) {
         const closerIds = [...new Set(chamadasData.map(c => c.closer_id))]
-        const sdrIds = [...new Set(chamadasData.map(c => c.leads?.sdr_id).filter(Boolean))]
+        const sdrIds = [...new Set(chamadasData.map(c => (c.leads as any)?.sdr_id).filter(Boolean))]
         
         // Buscar nomes dos closers e SDRs
         const { data: usuarios } = await supabase
@@ -166,7 +166,7 @@ export function VendasAprovacao() {
       }
 
       // Buscar nomes dos SDRs para os leads e formatar
-      let leadsFormatted = []
+      let leadsFormatted: any[] = []
       if (leadsData && leadsData.length > 0) {
         const sdrIds = [...new Set(leadsData.map(l => l.sdr_id).filter(Boolean))]
         
@@ -202,7 +202,7 @@ export function VendasAprovacao() {
       setVendas(todasVendas)
       
       // Pré-selecionar produtos para leads que já têm produto definido
-      const preSelecoes = {}
+      const preSelecoes: any = {}
       todasVendas.forEach(venda => {
         if (venda.tipo === 'lead' && venda.produto_id) {
           preSelecoes[venda.id] = venda.produto_id
@@ -392,7 +392,7 @@ export function VendasAprovacao() {
           }
         } catch (faturamentoError) {
           console.error('❌ ERRO CAPTURADO no faturamento:', faturamentoError)
-          console.error('❌ Stack trace:', faturamentoError.stack)
+          console.error('❌ Stack trace:', (faturamentoError as Error).stack)
           // Não bloquear a aprovação por causa do faturamento
         }
 

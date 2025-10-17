@@ -340,7 +340,7 @@ export default function AdminDashboard() {
 
             // Calcular vendas se existirem
             const faturamentoVendas = vendasMotor?.reduce((acc, v) => acc + (v.valor || 0), 0) || 0
-            const custoVendas = vendasMotor?.reduce((acc, v) => acc + (v.produtos?.custo || 0), 0) || 0
+            const custoVendas = vendasMotor?.reduce((acc, v) => acc + ((v as any).produtos?.custo || 0), 0) || 0
 
             // Buscar entradas e saídas adicionais do BPO (sempre, mesmo sem vendas)
             const { data: entradas } = await supabase

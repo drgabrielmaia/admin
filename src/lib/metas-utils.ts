@@ -77,9 +77,11 @@ export async function forceUpdateAllMetas() {
     console.log('🔄 Atualizando todas as metas...')
     
     // Executar função RPC se existir
-    await supabase.rpc('atualizar_metas_com_dados_reais').catch(e => 
+    try {
+      await supabase.rpc('atualizar_metas_com_dados_reais')
+    } catch (e: any) {
       console.log('Função RPC não encontrada:', e.message)
-    )
+    }
     
     // Refresh manual baseado em contagens reais
     const { data: allMetas } = await supabase

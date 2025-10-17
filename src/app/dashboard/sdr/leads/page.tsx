@@ -514,11 +514,11 @@ function EditLeadDialog({ lead, onUpdate, onCancel }: {
     
     const updatedData = {
       nome: formData.nome.trim(),
-      email: formData.email.trim() || null,
-      telefone: formData.telefone.trim() || null,
+      email: formData.email.trim() || undefined,
+      telefone: formData.telefone.trim() || undefined,
       origem: formData.origem,
-      valor_estimado: formData.valor_estimado ? parseFloat(formData.valor_estimado) : null,
-      observacoes: formData.observacoes.trim() || null
+      valor_estimado: formData.valor_estimado ? parseFloat(formData.valor_estimado) : undefined,
+      observacoes: formData.observacoes.trim() || undefined
     }
 
     onUpdate(updatedData)

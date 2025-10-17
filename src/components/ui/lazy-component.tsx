@@ -39,7 +39,7 @@ export function withLazyLoading<T extends {}>(
     
     return (
       <Suspense fallback={fallbackContent}>
-        <LazyComponent {...props} />
+        <LazyComponent {...props as any} />
       </Suspense>
     )
   }

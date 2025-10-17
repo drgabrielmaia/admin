@@ -117,7 +117,7 @@ export function ModernSDRDashboard() {
                     Olá, {user?.nome?.split(' ')[0]}! 👋
                   </h1>
                   <BirthdayIcon 
-                    birthDate={user?.data_nascimento} 
+                    birthDate={user?.data_nascimento || null} 
                     userName={user?.nome}
                     size="lg"
                     className="text-yellow-300"

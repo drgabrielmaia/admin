@@ -100,8 +100,8 @@ export function useOptimizedData<T = any>({
       if (queryError) throw queryError
 
       const newData = result || []
-      setData(newData)
-      setCachedData(newData)
+      setData(newData as T[])
+      setCachedData(newData as T[])
 
       if (showLoading) setLoading(false)
     } catch (err: any) {

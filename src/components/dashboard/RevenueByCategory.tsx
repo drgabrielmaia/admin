@@ -250,7 +250,7 @@ export function RevenueByCategory() {
                 
                 return (
                   <div 
-                    key={`${product.categoria}-${product.produto_nome}`}
+                    key={`${product.categoria}-${(product as any).produto_nome}`}
                     className={clsx(
                       "flex items-center justify-between p-4 rounded-xl border transition-all duration-200",
                       "bg-muted/20 border-border/50 hover:border-primary/20 hover:shadow-md"

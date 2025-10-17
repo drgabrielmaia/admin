@@ -4,15 +4,16 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { EditarImovel } from '@/components/real-estate/EditarImovel'
 
 interface EditarImovelPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function EditarImovelPage({ params }: EditarImovelPageProps) {
+export default async function EditarImovelPage({ params }: EditarImovelPageProps) {
+  const { id } = await params
   return (
     <DashboardLayout title="Editar Imóvel">
-      <EditarImovel imovelId={params.id} />
+      <EditarImovel imovelId={id} />
     </DashboardLayout>
   )
 }

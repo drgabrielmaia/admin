@@ -113,7 +113,7 @@ export function RegisterForm({ onToggleLogin }: RegisterFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="funcao">Função</Label>
-            <Select value={funcao} onValueChange={setFuncao}>
+            <Select value={funcao} onValueChange={(value: string) => setFuncao(value as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione sua função" />
               </SelectTrigger>

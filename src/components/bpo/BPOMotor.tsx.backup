@@ -1,0 +1,812 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { supabase } from '@/lib/supabase'
+import { BPOCharts } from './BPOCharts'
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  PiggyBank,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Plus,
+  Edit,
+  Trash2,
+  BarChart3,
+  Calendar,
+  CreditCard,
+  PieChart,
+  Filter,
+  Download
+} from 'lucide-react'
+
+interface BPOMotorProps {
+  motorType: 'mentoria' | 'infoproduto' | 'saas' | 'fisico' | 'parceria' | 'clinica' | 'evento' | 'real-estate' | 'sdr' | 'closer'
+  motorName: string
+  motorColor: string
+  showFormExternal?: boolean
+  onFormToggle?: (show: boolean) => void
+  hideInternalButton?: boolean
+}
+
+interface MovimentacaoBPO {
+  id: string
+  tipo: 'entrada' | 'saida'
+  categoria: string
+  subcategoria?: string
+  valor: number
+  data_movimento: string
+  descricao?: string
+  conta_nome?: string
+  metodo_pagamento?: 'pix' | 'debito' | 'credito' | 'transferencia' | 'dinheiro' | 'boleto' | 'outros'
+  tipo_gestao?: 'bruto' | 'pessoal' | 'aluguel' | 'operacional' | 'marketing' | 'vendas' | 'administrativo'
+  status?: 'pendente' | 'realizado' | 'cancelado'
+  tags?: string[]
+}
+
+interface DadosAnalyticos {
+  faturamento_total: number
+  custos_total: number
+  lucro_total: number
+  margem_lucro_percent: number
+  pix_total: number
+  debito_total: number
+  credito_total: number
+  despesas_marketing: number
+  despesas_operacionais: number
+  despesas_pessoal: number
+  historico_mensal: any[]
+}
+
+export function BPOMotor({
+  motorType,
+  motorName,
+  motorColor,
+  showFormExternal = false,
+  onFormToggle,
+  hideInternalButton = false
+}: BPOMotorProps) {
+  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoBPO[]>([])
+  const [contas, setContas] = useState<any[]>([])
+  const [categorias, setCategorias] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editingItem, setEditingItem] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState('dashboard')
+
+  // Métricas calculadas (versão enhanced)
+  const [dadosAnalyticos, setDadosAnalyticos] = useState<DadosAnalyticos>({
+    faturamento_total: 0,
+    custos_total: 0,
+    lucro_total: 0,
+    margem_lucro_percent: 0,
+    pix_total: 0,
+    debito_total: 0,
+    credito_total: 0,
+    despesas_marketing: 0,
+    despesas_operacionais: 0,
+    despesas_pessoal: 0,
+    historico_mensal: []
+  })
+
+  // Filtros
+  const [filtros, setFiltros] = useState({
+    periodo: 'mes_atual',
+    forma_pagamento: 'todos',
+    categoria: 'todas',
+    tipo_gestao: 'todos'
+  })
+
+  // Formulário Enhanced
+  const [formData, setFormData] = useState({
+    tipo: 'entrada' as 'entrada' | 'saida',
+    categoria: '',
+    subcategoria: '',
+    valor: '',
+    data_movimento: new Date().toISOString().split('T')[0],
+    descricao: '',
+    conta_id: '',
+    metodo_pagamento: 'pix' as 'pix' | 'debito' | 'credito' | 'transferencia' | 'dinheiro' | 'boleto' | 'outros',
+    tipo_gestao: 'bruto' as 'bruto' | 'pessoal' | 'aluguel' | 'operacional' | 'marketing' | 'vendas' | 'administrativo',
+    tags: [] as string[]
+  })
+
+  useEffect(() => {
+    loadData()
+  }, [motorType, filtros])
+
+  useEffect(() => {
+    if (showFormExternal !== undefined) {
+      setShowForm(showFormExternal)
+    }
+  }, [showFormExternal])
+
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      await Promise.all([
+        loadMovimentacoes(),
+        loadContas(),
+        loadCategorias(),
+        loadDadosAnalyticos()
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadContas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contas_bancarias')
+        .select('*')
+        .eq('ativo', true)
+        .order('nome')
+
+      if (error) throw error
+      setContas(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar contas:', error)
+    }
+  }
+
+  const loadCategorias = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bpo_categorias')
+        .select('*')
+        .eq('ativo', true)
+        .order('nome')
+
+      if (error) {
+        // Tabela pode não existir ainda, usar categorias padrão
+        setCategorias([
+          { id: '1', nome: 'Vendas', tipo: 'entrada' },
+          { id: '2', nome: 'Serviços', tipo: 'entrada' },
+          { id: '3', nome: 'Marketing', tipo: 'saida' },
+          { id: '4', nome: 'Operacional', tipo: 'saida' }
+        ])
+        return
+      }
+      setCategorias(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error)
+      // Fallback para categorias padrão
+      setCategorias([
+        { id: '1', nome: 'Vendas', tipo: 'entrada' },
+        { id: '2', nome: 'Serviços', tipo: 'entrada' },
+        { id: '3', nome: 'Marketing', tipo: 'saida' },
+        { id: '4', nome: 'Operacional', tipo: 'saida' }
+      ])
+    }
+  }
+
+  const getBusinessType = () => {
+    switch (motorType) {
+      case 'mentoria':
+        return 'mentoria'
+      case 'infoproduto':
+        return 'infoproduto'
+      case 'saas':
+        return 'saas'
+      case 'fisico':
+        return 'fisico'
+      case 'parceria':
+        return 'parceria'
+      case 'evento':
+        return 'evento'
+      case 'clinica':
+        return 'clinica'
+      case 'real-estate':
+        return 'real-estate'
+      case 'sdr':
+      case 'closer':
+        return 'mentoria' // SDR e Closer usam mentoria como padrão
+      default:
+        return 'mentoria'
+    }
+  }
+
+  const loadDadosAnalyticos = async () => {
+    try {
+      const businessType = getBusinessType()
+
+      // PUXAR DADOS REAIS DO BANCO DE DADOS - SEM MOCK
+      console.log('🔄 Carregando dados REAIS do banco para:', businessType)
+
+      // 1. FATURAMENTO REAL das movimentações
+      const { data: movimentacoes, error: movError } = await supabase
+        .from('movimentacoes_financeiras')
+        .select('*')
+        .eq('negocio', businessType)
+        .eq('status', 'realizado')
+
+      let faturamento_real = 0
+      let custos_real = 0
+      let pix_total = 0
+      let debito_total = 0
+      let credito_total = 0
+      let despesas_marketing = 0
+      let despesas_operacionais = 0
+      let despesas_pessoal = 0
+
+      if (movimentacoes && movimentacoes.length > 0) {
+        console.log(`📊 Encontradas ${movimentacoes.length} movimentações reais`)
+
+        movimentacoes.forEach(mov => {
+          if (mov.tipo === 'entrada') {
+            faturamento_real += mov.valor
+
+            // Separar por forma de pagamento (usando metodo_pagamento da tabela)
+            if (mov.metodo_pagamento === 'pix') pix_total += mov.valor
+            else if (mov.metodo_pagamento === 'debito') debito_total += mov.valor
+            else if (mov.metodo_pagamento === 'credito' || mov.metodo_pagamento === 'cartao') credito_total += mov.valor
+          } else {
+            custos_real += mov.valor
+
+            // Separar despesas por categoria (usando categoria da tabela)
+            if (mov.categoria.toLowerCase().includes('marketing')) despesas_marketing += mov.valor
+            else if (mov.categoria.toLowerCase().includes('operacional') || mov.categoria.toLowerCase().includes('hospedagem') || mov.categoria.toLowerCase().includes('plataforma')) despesas_operacionais += mov.valor
+            else if (mov.categoria.toLowerCase().includes('pessoal') || mov.categoria.toLowerCase().includes('treinamento')) despesas_pessoal += mov.valor
+          }
+        })
+      }
+
+      // 2. VENDAS REAIS do sistema (chamadas aprovadas)
+      const { data: vendas, error: vendasError } = await supabase
+        .from('chamadas')
+        .select('valor, data_chamada')
+        .eq('resultado', 'venda')
+        .eq('status_aprovacao', 'aprovada')
+
+      let faturamento_vendas = 0
+      if (vendas && vendas.length > 0) {
+        console.log(`💰 Encontradas ${vendas.length} vendas aprovadas`)
+        faturamento_vendas = vendas.reduce((acc, venda) => acc + (venda.valor || 0), 0)
+      }
+
+      // 3. CÁLCULOS FINAIS REAIS
+      const faturamento_total = faturamento_real + faturamento_vendas
+      const lucro_total = faturamento_total - custos_real
+      const margem_lucro_percent = faturamento_total > 0 ? ((lucro_total / faturamento_total) * 100) : 0
+
+      // 4. HISTÓRICO REAL
+      const { data: historico, error: histError } = await supabase
+        .from('movimentacoes_financeiras')
+        .select('data_movimento, tipo, valor')
+        .eq('negocio', businessType)
+        .order('data_movimento', { ascending: false })
+
+      let historico_processado = []
+      if (historico && historico.length > 0) {
+        // Agrupar por mês
+        const groupedByMonth = historico.reduce((acc, mov) => {
+          const month = mov.data_movimento.substring(0, 7) // YYYY-MM
+          if (!acc[month]) {
+            acc[month] = {
+              mes_ano: month,
+              total_entradas: 0,
+              total_saidas: 0,
+              total_movimentacoes: 0
+            }
+          }
+
+          acc[month].total_movimentacoes++
+          if (mov.tipo === 'entrada') {
+            acc[month].total_entradas += mov.valor
+          } else {
+            acc[month].total_saidas += mov.valor
+          }
+          acc[month].saldo_liquido = acc[month].total_entradas - acc[month].total_saidas
+
+          return acc
+        }, {})
+
+        historico_processado = Object.values(groupedByMonth).slice(0, 12)
+      }
+
+      const dadosReais = {
+        faturamento_total,
+        custos_total: custos_real,
+        lucro_total,
+        margem_lucro_percent,
+        pix_total,
+        debito_total,
+        credito_total,
+        despesas_marketing,
+        despesas_operacionais,
+        despesas_pessoal,
+        historico_mensal: historico_processado
+      }
+
+      console.log('📈 Dados REAIS carregados:', dadosReais)
+      setDadosAnalyticos(dadosReais)
+
+    } catch (error) {
+      console.error('Erro ao carregar dados REAIS:', error)
+
+      // Em caso de erro, zerar tudo - SEM DADOS FALSOS
+      setDadosAnalyticos({
+        faturamento_total: 0,
+        custos_total: 0,
+        lucro_total: 0,
+        margem_lucro_percent: 0,
+        pix_total: 0,
+        debito_total: 0,
+        credito_total: 0,
+        despesas_marketing: 0,
+        despesas_operacionais: 0,
+        despesas_pessoal: 0,
+        historico_mensal: []
+      })
+    }
+  }
+
+  const loadMovimentacoes = async () => {
+    try {
+      const businessType = getBusinessType()
+
+      console.log('🔄 Carregando movimentações REAIS para:', businessType)
+
+      // PUXAR MOVIMENTAÇÕES REAIS DO BANCO - SEM MOCK
+      let query = supabase
+        .from('movimentacoes_financeiras')
+        .select(`
+          *,
+          contas_bancarias:conta_id(nome)
+        `)
+        .eq('negocio', businessType)
+        .order('data_movimento', { ascending: false })
+
+      // Filtro de período
+      if (filtros.periodo === 'mes_atual') {
+        const inicioMes = new Date()
+        inicioMes.setDate(1)
+        query = query.gte('data_movimento', inicioMes.toISOString().split('T')[0])
+      } else if (filtros.periodo === 'ultimo_mes') {
+        const inicioMes = new Date()
+        inicioMes.setMonth(inicioMes.getMonth() - 1)
+        inicioMes.setDate(1)
+        const fimMes = new Date()
+        fimMes.setDate(1)
+        query = query
+          .gte('data_movimento', inicioMes.toISOString().split('T')[0])
+          .lt('data_movimento', fimMes.toISOString().split('T')[0])
+      }
+
+      // Outros filtros
+      if (filtros.forma_pagamento !== 'todos') {
+        query = query.eq('metodo_pagamento', filtros.forma_pagamento)
+      }
+      if (filtros.tipo_gestao !== 'todos') {
+        query = query.eq('tipo_gestao', filtros.tipo_gestao)
+      }
+
+      const { data: movimentacoesData, error: movError } = await query.limit(100)
+
+      if (movError) {
+        console.error('❌ Erro ao carregar movimentações:', movError.message)
+        setMovimentacoes([]) // Se der erro, lista vazia - SEM DADOS FAKE
+        return
+      }
+
+      console.log(`📋 Encontradas ${movimentacoesData?.length || 0} movimentações reais`)
+
+      const movimentacoesFormatted = movimentacoesData?.map(mov => ({
+        ...mov,
+        conta_nome: mov.contas_bancarias?.nome || 'Conta não encontrada'
+      })) || []
+
+      setMovimentacoes(movimentacoesFormatted)
+
+      // Se não tem movimentações, mostrar mensagem real
+      if (movimentacoesFormatted.length === 0) {
+        console.log('📭 Nenhuma movimentação encontrada para:', businessType)
+      }
+
+    } catch (error) {
+      console.error('❌ Erro geral ao carregar movimentações:', error)
+      setMovimentacoes([]) // Em caso de erro, lista vazia - SEM DADOS FAKE
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.conta_id || !formData.valor || !formData.categoria) return
+
+    try {
+      const businessType = getBusinessType()
+      const payload = {
+        ...formData,
+        valor: parseFloat(formData.valor),
+        negocio: businessType,
+        categoria: `${motorName} - ${formData.categoria}`,
+        status: 'realizado',
+        tags: formData.tags.length > 0 ? formData.tags : null
+      }
+
+      if (editingItem) {
+        const { error } = await supabase
+          .from('movimentacoes_financeiras')
+          .update(payload)
+          .eq('id', editingItem.id)
+
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('movimentacoes_financeiras')
+          .insert(payload)
+
+        if (error) throw error
+      }
+
+      // Resetar formulário
+      setFormData({
+        tipo: 'entrada',
+        categoria: '',
+        subcategoria: '',
+        valor: '',
+        data_movimento: new Date().toISOString().split('T')[0],
+        descricao: '',
+        conta_id: '',
+        metodo_pagamento: 'pix',
+        tipo_gestao: 'bruto',
+        tags: []
+      })
+      setShowForm(false)
+      setEditingItem(null)
+
+      await loadData()
+
+    } catch (error) {
+      console.error('Erro ao salvar movimentação:', error)
+      alert('Erro ao salvar movimentação')
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta movimentação?')) return
+
+    try {
+      const { error } = await supabase
+        .from('movimentacoes_financeiras')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      await loadMovimentacoes()
+    } catch (error) {
+      console.error('Erro ao deletar movimentação:', error)
+    }
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR')
+  }
+
+  if (loading) {
+    return <div className="text-center text-slate-400">Carregando BPO...</div>
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-semibold text-white">BPO {motorName}</h3>
+        {!hideInternalButton && (
+          <Button
+            onClick={() => {
+              setEditingItem(null)
+              const newShowForm = !showForm
+              setShowForm(newShowForm)
+              if (onFormToggle) {
+                onFormToggle(newShowForm)
+              }
+            }}
+            className={`bg-${motorColor}-600 hover:bg-${motorColor}-700`}
+            style={{ backgroundColor: motorColor }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Movimentação
+          </Button>
+        )}
+      </div>
+
+      {/* Tabs Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 bg-slate-800">
+          <TabsTrigger value="dashboard" className="data-[state=active]:bg-slate-700">
+            <DollarSign className="h-4 w-4 mr-2" />
+            Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="movimentacoes" className="data-[state=active]:bg-slate-700">
+            <ArrowUpCircle className="h-4 w-4 mr-2" />
+            Movimentações
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-slate-700">
+            <PieChart className="h-4 w-4 mr-2" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Dashboard Tab */}
+        <TabsContent value="dashboard" className="space-y-6 mt-6">
+          {/* KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Faturamento {motorName}</p>
+                    <p className="text-2xl font-bold text-green-400">
+                      {formatCurrency(dadosAnalyticos.faturamento_total)}
+                    </p>
+                  </div>
+                  <ArrowUpCircle className="h-8 w-8 text-green-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Custos {motorName}</p>
+                    <p className="text-2xl font-bold text-red-400">
+                      {formatCurrency(dadosAnalyticos.custos_total)}
+                    </p>
+                  </div>
+                  <ArrowDownCircle className="h-8 w-8 text-red-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Saldo Líquido</p>
+                    <p className={`text-2xl font-bold ${dadosAnalyticos.lucro_total >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {formatCurrency(dadosAnalyticos.lucro_total)}
+                    </p>
+                  </div>
+                  {dadosAnalyticos.lucro_total >= 0 ?
+                    <TrendingUp className="h-8 w-8 text-green-400" /> :
+                    <TrendingDown className="h-8 w-8 text-red-400" />
+                  }
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Movimentações Tab */}
+        <TabsContent value="movimentacoes" className="space-y-6 mt-6">
+          {/* Formulário */}
+          {showForm && (
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader>
+                <CardTitle>{editingItem ? 'Editar' : 'Nova'} Movimentação - {motorName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="conta_id">Conta *</Label>
+                    <Select value={formData.conta_id} onValueChange={(value) => setFormData({...formData, conta_id: value})}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700">
+                        <SelectValue placeholder="Selecione uma conta" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {contas.map((conta) => (
+                          <SelectItem key={conta.id} value={conta.id}>{conta.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="tipo">Tipo *</Label>
+                    <Select value={formData.tipo} onValueChange={(value: 'entrada' | 'saida') => setFormData({...formData, tipo: value})}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="entrada">Entrada</SelectItem>
+                        <SelectItem value="saida">Saída</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="valor">Valor *</Label>
+                    <Input
+                      id="valor"
+                      type="number"
+                      step="0.01"
+                      value={formData.valor}
+                      onChange={(e) => setFormData({...formData, valor: e.target.value})}
+                      className="bg-slate-800 border-slate-700"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="categoria">Categoria *</Label>
+                    <Input
+                      id="categoria"
+                      value={formData.categoria}
+                      onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                      className="bg-slate-800 border-slate-700"
+                      placeholder="Ex: Receita de Vendas"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="subcategoria">Subcategoria</Label>
+                    <Input
+                      id="subcategoria"
+                      value={formData.subcategoria}
+                      onChange={(e) => setFormData({...formData, subcategoria: e.target.value})}
+                      className="bg-slate-800 border-slate-700"
+                      placeholder="Subcategoria específica"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="metodo_pagamento">Forma de Pagamento *</Label>
+                    <Select value={formData.metodo_pagamento} onValueChange={(value: any) => setFormData({...formData, metodo_pagamento: value})}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pix">PIX</SelectItem>
+                        <SelectItem value="debito">Cartão Débito</SelectItem>
+                        <SelectItem value="credito">Cartão Crédito</SelectItem>
+                        <SelectItem value="transferencia">Transferência</SelectItem>
+                        <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                        <SelectItem value="boleto">Boleto</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="tipo_gestao">Tipo Gerencial *</Label>
+                    <Select value={formData.tipo_gestao} onValueChange={(value: any) => setFormData({...formData, tipo_gestao: value})}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bruto">Bruto</SelectItem>
+                        <SelectItem value="pessoal">Pessoal</SelectItem>
+                        <SelectItem value="aluguel">Aluguel</SelectItem>
+                        <SelectItem value="operacional">Operacional</SelectItem>
+                        <SelectItem value="marketing">Marketing</SelectItem>
+                        <SelectItem value="vendas">Vendas</SelectItem>
+                        <SelectItem value="administrativo">Administrativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="data_movimento">Data *</Label>
+                    <Input
+                      id="data_movimento"
+                      type="date"
+                      value={formData.data_movimento}
+                      onChange={(e) => setFormData({...formData, data_movimento: e.target.value})}
+                      className="bg-slate-800 border-slate-700"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="descricao">Descrição</Label>
+                    <Input
+                      id="descricao"
+                      value={formData.descricao}
+                      onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                      className="bg-slate-800 border-slate-700"
+                      placeholder="Descrição adicional..."
+                    />
+                  </div>
+
+                  <div className="md:col-span-3 flex gap-2">
+                    <Button type="submit" style={{ backgroundColor: motorColor }}>
+                      {editingItem ? 'Atualizar' : 'Cadastrar'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowForm(false)
+                        setEditingItem(null)
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Lista de Movimentações */}
+          <Card className="bg-slate-900 border-slate-800">
+            <CardHeader>
+              <CardTitle>Movimentações - {motorName}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {movimentacoes.length === 0 ? (
+                  <p className="text-slate-400 text-center py-8">
+                    Nenhuma movimentação registrada para {motorName}
+                  </p>
+                ) : (
+                  movimentacoes.map((mov) => (
+                    <div key={mov.id} className="flex justify-between items-center p-4 rounded-lg bg-slate-800">
+                      <div className="flex items-center space-x-4">
+                        {mov.tipo === 'entrada' ?
+                          <ArrowUpCircle className="h-5 w-5 text-green-400" /> :
+                          <ArrowDownCircle className="h-5 w-5 text-red-400" />
+                        }
+                        <div>
+                          <p className="font-medium text-white">{mov.categoria}</p>
+                          <p className="text-sm text-slate-400">
+                            {mov.conta_nome} • {formatDate(mov.data_movimento)}
+                          </p>
+                          {mov.descricao && <p className="text-sm text-slate-500">{mov.descricao}</p>}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="text-right">
+                          <p className={`font-semibold ${mov.tipo === 'entrada' ? 'text-green-400' : 'text-red-400'}`}>
+                            {mov.tipo === 'entrada' ? '+' : '-'}{formatCurrency(mov.valor)}
+                          </p>
+                        </div>
+                        <div className="flex space-x-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDelete(mov.id)}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6 mt-6">
+          <BPOCharts
+            motorType={motorType}
+            motorName={motorName}
+            motorColor={motorColor}
+            dadosAnalyticos={dadosAnalyticos}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 94%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Premium dark design system colors */
+    --background: 218 23% 5%; /* #0E0E10 */
+    --foreground: 210 20% 94%; /* #F1F5F9 */
+    --card: 215 14% 11%; /* #1A1C20 */
+    --card-foreground: 210 20% 94%; /* #F1F5F9 */
+    --popover: 215 14% 11%; /* #1A1C20 */
+    --popover-foreground: 210 20% 94%; /* #F1F5F9 */
+    --primary: 213 27% 84%; /* Blue-400 */
+    --primary-foreground: 218 23% 5%; /* #0E0E10 */
+    --secondary: 215 13% 19%; /* #2E3138 */
+    --secondary-foreground: 210 20% 94%; /* #F1F5F9 */
+    --muted: 215 13% 19%; /* #2E3138 */
+    --muted-foreground: 215 16% 58%; /* #94A3B8 */
+    --accent: 215 25% 27%; /* Slightly lighter */
+    --accent-foreground: 210 20% 94%; /* #F1F5F9 */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 13% 19%; /* #2E3138 */
+    --input: 217 19% 9%; /* #16181D */
+    --ring: 213 27% 84%; /* Blue ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Scrollbar personalizada para dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-lg;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+  }
+
+  /* Animações personalizadas */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+
+  @keyframes pulse-neon {
+    0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.8); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-pulse-neon {
+    animation: pulse-neon 2s infinite;
+  }
+
+  /* Estilos para cards e componentes */
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Gradientes personalizados */
+  .bg-dark-gradient {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  }
+
+  .bg-neon-gradient {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  }
+
+  /* Botões com efeito neon */
+  .btn-neon {
+    background: linear-gradient(135deg, #00ff88, #00cc6a);
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .btn-neon:hover {
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+    transform: translateY(-1px);
+  }
+
+  /* Placeholders e estados de loading */
+  .skeleton {
+    background: linear-gradient(90deg, #1e293b, #334155, #1e293b);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Responsividade para telas pequenas */
+  @media (max-width: 640px) {
+    .responsive-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .responsive-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .responsive-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}

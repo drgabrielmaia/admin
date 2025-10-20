@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   Loader2
 } from 'lucide-react'
-import clsx from 'clsx'
 
 interface VendaPendente {
   id: string
@@ -45,7 +44,7 @@ interface Produto {
 export function VendasAprovacao() {
   const { user } = useAuth()
   const [vendas, setVendas] = useState<VendaPendente[]>([])
-  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
   const [processando, setProcessando] = useState<string | null>(null)
   const [motivoRejeicao, setMotivoRejeicao] = useState<{ [key: string]: string }>({})
@@ -138,7 +137,7 @@ export function VendasAprovacao() {
       })
 
       // Buscar nomes dos closers para as chamadas
-      let vendasFormatted: any[] = []
+      let vendasFormatted: VendaPendente[] = []
       if (chamadasData && chamadasData.length > 0) {
         const closerIds = [...new Set(chamadasData.map(c => c.closer_id))]
         const sdrIds = [...new Set(chamadasData.map(c => (c.leads as any)?.sdr_id).filter(Boolean))]
@@ -166,7 +165,7 @@ export function VendasAprovacao() {
       }
 
       // Buscar nomes dos SDRs para os leads e formatar
-      let leadsFormatted: any[] = []
+      let leadsFormatted: VendaPendente[] = []
       if (leadsData && leadsData.length > 0) {
         const sdrIds = [...new Set(leadsData.map(l => l.sdr_id).filter(Boolean))]
         
@@ -202,13 +201,13 @@ export function VendasAprovacao() {
       setVendas(todasVendas)
       
       // Pré-selecionar produtos para leads que já têm produto definido
-      const preSelecoes: any = {}
+      const preSelecoes: Record<string, string> = {}
       todasVendas.forEach(venda => {
         if (venda.tipo === 'lead' && venda.produto_id) {
           preSelecoes[venda.id] = venda.produto_id
         }
       })
-      
+
       if (Object.keys(preSelecoes).length > 0) {
         setProdutoSelecionado(prev => ({ ...prev, ...preSelecoes }))
         console.log('✅ Produtos pré-selecionados:', preSelecoes)
@@ -231,7 +230,7 @@ export function VendasAprovacao() {
       return
     }
     
-    const { observacoes, ...vendaSemObservacoes } = venda
+    const { observacoes: _, ...vendaSemObservacoes } = venda
     console.log('📋 Dados da venda:', vendaSemObservacoes)
     
     // Usar produto já selecionado manualmente ou produto da venda/lead

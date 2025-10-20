@@ -10,7 +10,7 @@ interface LazyComponentProps {
 }
 
 // HOC para lazy loading de componentes
-export function withLazyLoading<T extends {}>(
+export function withLazyLoading<T extends Record<string, unknown>>(
   componentImport: () => Promise<{ default: ComponentType<T> }>,
   options: LazyComponentProps = {}
 ) {

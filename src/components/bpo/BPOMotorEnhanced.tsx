@@ -52,6 +52,14 @@ interface MovimentacaoBPO {
   tags?: string[]
 }
 
+interface HistoricoMensal {
+  mes: string
+  ano: number
+  faturamento: number
+  custos: number
+  lucro: number
+}
+
 interface DadosAnalyticos {
   faturamento_total: number
   custos_total: number
@@ -63,7 +71,33 @@ interface DadosAnalyticos {
   despesas_marketing: number
   despesas_operacionais: number
   despesas_pessoal: number
-  historico_mensal: any[]
+  historico_mensal: HistoricoMensal[]
+}
+
+interface Conta {
+  id: string
+  nome: string
+  tipo: string
+  saldo?: number
+}
+
+interface Categoria {
+  id: string
+  nome: string
+  tipo: 'entrada' | 'saida'
+  subcategorias?: string[]
+}
+
+interface DadosAgrupados {
+  periodo: string
+  faturamento: number
+  custos: number
+  lucro: number
+  margem_lucro: number
+  movimentacoes: MovimentacaoBPO[]
+  total_movimentacoes: number
+  total_entradas: number
+  total_saidas: number
 }
 
 export function BPOMotorEnhanced({
@@ -75,11 +109,11 @@ export function BPOMotorEnhanced({
   hideInternalButton = false
 }: BPOMotorProps) {
   const [movimentacoes, setMovimentacoes] = useState<MovimentacaoBPO[]>([])
-  const [contas, setContas] = useState<any[]>([])
-  const [categorias, setCategorias] = useState<any[]>([])
+  const [contas, setContas] = useState<Conta[]>([])
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [editingItem, setEditingItem] = useState<any>(null)
+  const [editingItem, setEditingItem] = useState<MovimentacaoBPO | null>(null)
   const [activeTab, setActiveTab] = useState('dashboard')
 
   // Métricas calculadas (versão enhanced)
@@ -158,7 +192,7 @@ export function BPOMotorEnhanced({
       new Date(b.data_movimento).getTime() - new Date(a.data_movimento).getTime()
     )
 
-    const agrupamento: { [key: string]: any } = {}
+    const agrupamento: { [key: string]: DadosAgrupados } = {}
 
     movimentacoesOrdenadas.forEach((mov) => {
       const data = new Date(mov.data_movimento)
@@ -212,7 +246,7 @@ export function BPOMotorEnhanced({
         : 0
     })
 
-    const dadosOrdenados = Object.values(agrupamento).sort((a: any, b: any) =>
+    const dadosOrdenados = Object.values(agrupamento).sort((a: DadosAgrupados, b: DadosAgrupados) =>
       b.periodo.localeCompare(a.periodo)
     )
 
@@ -345,27 +379,28 @@ export function BPOMotorEnhanced({
         .eq('negocio', businessType)
         .order('data_movimento', { ascending: false })
 
-      let historico_processado: any[] = []
+      let historico_processado: HistoricoMensal[] = []
       if (historico && historico.length > 0) {
         // Agrupar por mês
-        const groupedByMonth = historico.reduce((acc: any, mov) => {
+        const groupedByMonth = historico.reduce((acc: Record<string, HistoricoMensal>, mov) => {
           const month = mov.data_movimento.substring(0, 7) // YYYY-MM
+          const [year] = month.split('-')
           if (!acc[month]) {
             acc[month] = {
-              mes_ano: month,
-              total_entradas: 0,
-              total_saidas: 0,
-              total_movimentacoes: 0
+              mes: month,
+              ano: parseInt(year),
+              faturamento: 0,
+              custos: 0,
+              lucro: 0
             }
           }
 
-          acc[month].total_movimentacoes++
           if (mov.tipo === 'entrada') {
-            acc[month].total_entradas += mov.valor
+            acc[month].faturamento += mov.valor
           } else {
-            acc[month].total_saidas += mov.valor
+            acc[month].custos += mov.valor
           }
-          acc[month].saldo_liquido = acc[month].total_entradas - acc[month].total_saidas
+          acc[month].lucro = acc[month].faturamento - acc[month].custos
 
           return acc
         }, {})
@@ -936,7 +971,7 @@ export function BPOMotorEnhanced({
 
                   <div>
                     <Label htmlFor="metodo_pagamento">Forma de Pagamento *</Label>
-                    <Select value={formData.metodo_pagamento} onValueChange={(value: any) => setFormData({...formData, metodo_pagamento: value})}>
+                    <Select value={formData.metodo_pagamento} onValueChange={(value: string) => setFormData({...formData, metodo_pagamento: value as NonNullable<MovimentacaoBPO['forma_pagamento']>})}>
                       <SelectTrigger className="bg-slate-800 border-slate-700">
                         <SelectValue />
                       </SelectTrigger>
@@ -954,7 +989,7 @@ export function BPOMotorEnhanced({
 
                   <div>
                     <Label htmlFor="tipo_gestao">Tipo Gerencial *</Label>
-                    <Select value={formData.tipo_gestao} onValueChange={(value: any) => setFormData({...formData, tipo_gestao: value})}>
+                    <Select value={formData.tipo_gestao} onValueChange={(value: string) => setFormData({...formData, tipo_gestao: value as NonNullable<MovimentacaoBPO['tipo_gestao']>})}>
                       <SelectTrigger className="bg-slate-800 border-slate-700">
                         <SelectValue />
                       </SelectTrigger>
@@ -1284,7 +1319,7 @@ export function BPOMotorEnhanced({
                         <div className="mt-4 pt-4 border-t border-slate-700">
                           <p className="text-sm text-slate-400 mb-2">Movimentações do período:</p>
                           <div className="space-y-1">
-                            {item.movimentacoes.map((mov: any, movIndex: number) => (
+                            {item.movimentacoes.map((mov: MovimentacaoBPO, movIndex: number) => (
                               <div key={movIndex} className="flex justify-between items-center text-sm">
                                 <span className="text-slate-300">
                                   {mov.categoria} - {formatDate(mov.data_movimento)}

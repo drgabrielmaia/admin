@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,12 +10,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { MovimentacaoModal } from '@/components/modals/MovimentacaoModal'
 import { 
   Plus,
   TrendingUp,
   DollarSign,
-  Users,
   Target,
   Edit,
   Trash2,
@@ -53,7 +51,7 @@ export default function SaasPage() {
   })
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [showMovimentacaoModal, setShowMovimentacaoModal] = useState(false)
+  const [, setShowMovimentacaoModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<SaasProduto | null>(null)
   const [formData, setFormData] = useState({
     nome: '',
@@ -62,13 +60,7 @@ export default function SaasPage() {
     custo: ''
   })
 
-  useEffect(() => {
-    if (user?.funcao === 'admin') {
-      loadData()
-    }
-  }, [user])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -89,7 +81,13 @@ export default function SaasPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (user?.funcao === 'admin') {
+      loadData()
+    }
+  }, [user, loadData])
 
   const calcularVendas = async () => {
     try {
@@ -117,7 +115,7 @@ export default function SaasPage() {
         const totalVendas = vendasData.length
         const faturamentoVendas = vendasData.reduce((acc, v) => acc + (v.valor || 0), 0)
         const custoVendas = vendasData.reduce((acc, v) => {
-          const produto = v.produtos as any
+          const produto = v.produtos as { custo?: number }
           return acc + (produto?.custo || 0)
         }, 0)
 
@@ -479,7 +477,7 @@ export default function SaasPage() {
               <div className="text-center text-slate-400 py-8">
                 <Cloud className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhum produto SaaS cadastrado</p>
-                <p className="text-sm">Clique em "Novo Produto" para começar</p>
+                <p className="text-sm">Clique em &quot;Novo Produto&quot; para começar</p>
               </div>
             )}
           </CardContent>

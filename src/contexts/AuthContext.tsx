@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('fluxo_user', JSON.stringify(userData))
       setLoading(false)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Erro no login bypass:', error)
       throw error
     }
@@ -98,9 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loginBypass(data.user.email!)
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       setLoading(false)
-      throw new Error(error.message || 'Erro no login')
+      const errorMessage = error instanceof Error ? error.message : 'Erro no login'
+      throw new Error(errorMessage)
     }
   }
 
@@ -138,9 +139,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('fluxo_user', JSON.stringify(profile))
       setLoading(false)
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       setLoading(false)
-      throw new Error(error.message || 'Erro no cadastro')
+      const errorMessage = error instanceof Error ? error.message : 'Erro no cadastro'
+      throw new Error(errorMessage)
     }
   }
 

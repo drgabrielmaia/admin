@@ -145,7 +145,7 @@ export default function UsuariosPage() {
 
     } catch (error) {
       console.error('Erro ao salvar usuário:', error)
-      alert('Erro ao salvar usuário: ' + (error as any).message)
+      alert('Erro ao salvar usuário: ' + (error instanceof Error ? error.message : String(error)))
     }
   }
 
@@ -187,7 +187,7 @@ export default function UsuariosPage() {
 
     } catch (error) {
       console.error('Erro ao excluir usuário:', error)
-      alert('Erro ao excluir usuário: ' + (error as any).message)
+      alert('Erro ao excluir usuário: ' + (error instanceof Error ? error.message : String(error)))
     }
   }
 
@@ -329,7 +329,7 @@ export default function UsuariosPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="funcao">Função *</Label>
-                  <Select value={formData.funcao} onValueChange={(value: any) => setFormData({...formData, funcao: value})}>
+                  <Select value={formData.funcao} onValueChange={(value: "admin" | "sdr" | "closer") => setFormData({...formData, funcao: value})}>
                     <SelectTrigger className="bg-slate-800 border-slate-700">
                       <SelectValue />
                     </SelectTrigger>

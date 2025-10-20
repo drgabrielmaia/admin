@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { RegistrarChamadaForm } from '@/components/closer/RegistrarChamadaForm'
 import { useAuth } from '@/contexts/AuthContext'
@@ -65,13 +65,7 @@ export default function ChamadasPage() {
   const [showRegistrarChamada, setShowRegistrarChamada] = useState(false)
   const [filtroResultado, setFiltroResultado] = useState('todos')
 
-  useEffect(() => {
-    if (user) {
-      loadChamadas()
-    }
-  }, [user])
-
-  const loadChamadas = async () => {
+  const loadChamadas = useCallback(async () => {
     if (!user || user.funcao !== 'closer') return
 
     try {
@@ -96,7 +90,13 @@ export default function ChamadasPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user) {
+      loadChamadas()
+    }
+  }, [user, loadChamadas])
 
   const calculateStats = (data: Chamada[]) => {
     const hoje = new Date().toISOString().split('T')[0]
@@ -389,7 +389,7 @@ export default function ChamadasPage() {
 
                         {chamada.observacoes && (
                           <p className="mt-2 text-sm text-slate-400 italic">
-                            "{chamada.observacoes}"
+                            &quot;{chamada.observacoes}&quot;
                           </p>
                         )}
                       </div>

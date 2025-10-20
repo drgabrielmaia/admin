@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRoleProtection } from '@/hooks/useRoleProtection'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { KPICard } from '@/components/dashboard/KPICard'
@@ -57,22 +57,7 @@ export default function CloserDashboard() {
   const [data, setData] = useState<CloserDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (user?.id) {
-      loadDashboardData()
-    }
-  }, [user])
-
-  // Se ainda carregando auth ou sem acesso, não renderizar
-  if (authLoading || !hasAccess) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     if (!user?.id) return
 
     try {
@@ -211,7 +196,7 @@ export default function CloserDashboard() {
         tempoMedioChamada,
         chamadasRecentes: chamadasRecentes?.map(c => ({
           id: c.id,
-          lead_nome: (c.leads as any)?.nome || 'Lead não encontrado',
+          lead_nome: (c.leads as { nome?: string })?.nome || 'Lead não encontrado',
           valor: c.valor,
           resultado: c.resultado,
           duracao_minutos: c.duracao_minutos,
@@ -223,7 +208,13 @@ export default function CloserDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user?.id) {
+      loadDashboardData()
+    }
+  }, [user, loadDashboardData])
 
   if (loading) {
     return (

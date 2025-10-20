@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,6 @@ import {
   Plus,
   TrendingUp,
   DollarSign,
-  Users,
   Target,
   Edit,
   Trash2,
@@ -62,13 +61,7 @@ export default function InfoprodutosPage() {
     custo: ''
   })
 
-  useEffect(() => {
-    if (user?.funcao === 'admin') {
-      loadData()
-    }
-  }, [user])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -89,7 +82,13 @@ export default function InfoprodutosPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (user?.funcao === 'admin') {
+      loadData()
+    }
+  }, [user, loadData])
 
   const calcularVendas = async () => {
     try {
@@ -117,7 +116,7 @@ export default function InfoprodutosPage() {
         const totalVendas = vendasData.length
         const faturamentoVendas = vendasData.reduce((acc, v) => acc + (v.valor || 0), 0)
         const custoVendas = vendasData.reduce((acc, v) => {
-          const produto = v.produtos as any
+          const produto = v.produtos as { custo?: number }
           return acc + (produto?.custo || 0)
         }, 0)
 
@@ -479,7 +478,7 @@ export default function InfoprodutosPage() {
               <div className="text-center text-slate-400 py-8">
                 <Monitor className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhum infoproduto cadastrado</p>
-                <p className="text-sm">Clique em "Novo Infoproduto" para começar</p>
+                <p className="text-sm">Clique em &quot;Novo Infoproduto&quot; para começar</p>
               </div>
             )}
           </CardContent>

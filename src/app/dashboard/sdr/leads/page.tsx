@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { NovoLeadForm } from '@/components/sdr/NovoLeadForm'
 import { LeadsParaLiberacao } from '@/components/sdr/LeadsParaLiberacao'
@@ -9,14 +9,12 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Plus, 
-  Users, 
-  Eye, 
+import {
+  Plus,
+  Users,
   Edit,
   Phone,
   Mail,
-  Calendar,
   DollarSign,
   Filter,
   Search,
@@ -26,7 +24,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+// Dialog components removed as unused
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -58,11 +56,7 @@ export default function LeadsPage() {
   const [deletingLeadId, setDeletingLeadId] = useState<string | null>(null)
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null)
 
-  useEffect(() => {
-    loadLeads()
-  }, [user])
-
-  const loadLeads = async () => {
+  const loadLeads = useCallback(async () => {
     if (!user || user.funcao !== 'sdr') return
 
     try {
@@ -82,11 +76,15 @@ export default function LeadsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    loadLeads()
+  }, [loadLeads])
 
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
-      const updateData: any = { status: newStatus, updated_at: new Date().toISOString() }
+      const updateData: { status: string; updated_at: string; data_qualificacao?: string; data_agendamento?: string } = { status: newStatus, updated_at: new Date().toISOString() }
       
       // Se mudou para qualificado, salvar data
       if (newStatus === 'qualificado') {
@@ -411,7 +409,7 @@ export default function LeadsPage() {
                         </div>
 
                         {lead.observacoes && (
-                          <p className="mt-2 text-sm text-slate-400 italic">"{lead.observacoes}"</p>
+                          <p className="mt-2 text-sm text-slate-400 italic">&quot;{lead.observacoes}&quot;</p>
                         )}
                       </div>
                       

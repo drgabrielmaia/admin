@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, memo, useMemo, useCallback } from 'react'
+import { useState, useEffect, memo, useCallback } from 'react'
 import { useRoleProtection } from '@/hooks/useRoleProtection'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
@@ -9,22 +9,17 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
-import { BirthdayIcon } from '@/components/ui/birthday-icon'
-import { 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  Target, 
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  Target,
   Phone,
   Crown,
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
   RefreshCw,
-  Calendar,
-  Gift,
-  MapPin,
-  Cake,
   Filter
 } from 'lucide-react'
 import { measurePerformance, createApiCache } from '@/lib/performance'
@@ -66,20 +61,22 @@ interface DashboardData {
   }>
 }
 
-const MetricCard = memo(({ 
-  title, 
-  value, 
-  change, 
-  icon: Icon, 
-  trend = 'up',
-  className = '' 
-}: {
+interface MetricCardProps {
   title: string
   value: string | number
   change?: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   trend?: 'up' | 'down'
   className?: string
+}
+
+const MetricCard = memo<MetricCardProps>(({
+  title,
+  value,
+  change,
+  icon: Icon,
+  trend = 'up',
+  className = ''
 }) => (
   <Card className={`bg-[#1A1C20] border-[#2E3138] hover:border-[#3E4148] transition-all duration-200 ${className}`}>
     <CardContent className="p-6">
@@ -101,8 +98,22 @@ const MetricCard = memo(({
     </CardContent>
   </Card>
 ))
+MetricCard.displayName = 'MetricCard'
 
-const TopPerformerCard = memo(({ performer, index }: { performer: any; index: number }) => {
+interface TopPerformerCardProps {
+  performer: {
+    id: string
+    nome: string
+    funcao: string
+    data_nascimento?: string
+    vendas: number
+    faturamento: number
+    taxa_conversao: number
+  }
+  index: number
+}
+
+const TopPerformerCard = memo<TopPerformerCardProps>(({ performer, index }) => {
   return (
     <Card className="bg-[#1A1C20] border-[#2E3138] hover:border-[#3E4148] transition-all duration-200">
       <CardContent className="p-6">
@@ -140,13 +151,14 @@ const TopPerformerCard = memo(({ performer, index }: { performer: any; index: nu
     </Card>
   )
 })
+TopPerformerCard.displayName = 'TopPerformerCard'
 
 export default function AdminDashboard() {
   const { hasAccess, loading: authLoading } = useRoleProtection({ 
     allowedRoles: ['admin'] 
   })
   const { user } = useAuth()
-  const { temAniversarianteHoje, aniversariantesHoje } = useAniversarios()
+  const { temAniversarianteHoje } = useAniversarios()
 
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -340,7 +352,7 @@ export default function AdminDashboard() {
 
             // Calcular vendas se existirem
             const faturamentoVendas = vendasMotor?.reduce((acc, v) => acc + (v.valor || 0), 0) || 0
-            const custoVendas = vendasMotor?.reduce((acc, v) => acc + ((v as any).produtos?.custo || 0), 0) || 0
+            const custoVendas = vendasMotor?.reduce((acc, v) => acc + ((v as { produtos?: { custo?: number } }).produtos?.custo || 0), 0) || 0
 
             // Buscar entradas e saídas adicionais do BPO (sempre, mesmo sem vendas)
             const { data: entradas } = await supabase

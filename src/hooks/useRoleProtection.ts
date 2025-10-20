@@ -46,7 +46,7 @@ export function useRoleProtection(allowedRoles: UserRole[] | UseRoleProtectionOp
     }
 
     console.log('✅ Acesso permitido para função:', user.funcao)
-  }, [user, loading, options.allowedRoles, options.redirectTo, router])
+  }, [user, loading, options.allowedRoles, options.redirectTo, router, redirectTo])
 
   return {
     user,

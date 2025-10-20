@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -62,13 +62,7 @@ export default function MentoriaPage() {
     custo: ''
   })
 
-  useEffect(() => {
-    if (user?.funcao === 'admin') {
-      loadData()
-    }
-  }, [user])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -89,7 +83,13 @@ export default function MentoriaPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (user?.funcao === 'admin') {
+      loadData()
+    }
+  }, [user, loadData])
 
   const calcularVendas = async () => {
     try {
@@ -117,7 +117,7 @@ export default function MentoriaPage() {
         const totalVendas = vendasData.length
         const faturamentoVendas = vendasData.reduce((acc, v) => acc + (v.valor || 0), 0)
         const custoVendas = vendasData.reduce((acc, v) => {
-          const produto = v.produtos as any
+          const produto = v.produtos as { custo?: number }
           return acc + (produto?.custo || 0)
         }, 0)
 
@@ -486,7 +486,7 @@ export default function MentoriaPage() {
               <div className="text-center text-slate-400 py-8">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhum produto de mentoria cadastrado</p>
-                <p className="text-sm">Clique em "Novo Produto" para começar</p>
+                <p className="text-sm">Clique em &quot;Novo Produto&quot; para começar</p>
               </div>
             )}
           </CardContent>

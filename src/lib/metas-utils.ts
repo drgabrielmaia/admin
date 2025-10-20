@@ -79,8 +79,9 @@ export async function forceUpdateAllMetas() {
     // Executar função RPC se existir
     try {
       await supabase.rpc('atualizar_metas_com_dados_reais')
-    } catch (e: any) {
-      console.log('Função RPC não encontrada:', e.message)
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Erro desconhecido'
+      console.log('Função RPC não encontrada:', errorMessage)
     }
     
     // Refresh manual baseado em contagens reais

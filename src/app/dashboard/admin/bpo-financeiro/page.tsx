@@ -65,7 +65,7 @@ export default function BPOFinanceiroPage() {
   // Estados para formulários
   const [showFormMovimentacao, setShowFormMovimentacao] = useState(false)
   const [showFormConta, setShowFormConta] = useState(false)
-  const [editingItem, setEditingItem] = useState<{id: string; [key: string]: any} | null>(null)
+  const [editingItem, setEditingItem] = useState<MovimentacaoFinanceira | ContaBancaria | null>(null)
   
   // Formulários
   const [formMovimentacao, setFormMovimentacao] = useState({

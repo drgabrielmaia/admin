@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 interface UseOptimizedDataProps {
   tableName: string
   select?: string
-  filters?: Record<string, any>
+  filters?: Record<string, unknown>
   orderBy?: { column: string; ascending?: boolean }
   cacheKey?: string
   refreshInterval?: number
@@ -21,10 +21,10 @@ interface UseOptimizedDataReturn<T> {
 }
 
 // Cache global simples
-const dataCache = new Map<string, { data: any; timestamp: number }>()
+const dataCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
 
-export function useOptimizedData<T = any>({
+export function useOptimizedData<T = Record<string, unknown>>({
   tableName,
   select = '*',
   filters = {},
@@ -73,7 +73,7 @@ export function useOptimizedData<T = any>({
       // Verificar cache primeiro
       const cachedData = getCachedData()
       if (cachedData && showLoading) {
-        setData(cachedData)
+        setData(cachedData as T[])
         setLoading(false)
         return
       }
@@ -104,11 +104,12 @@ export function useOptimizedData<T = any>({
       setCachedData(newData as T[])
 
       if (showLoading) setLoading(false)
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (!mountedRef.current) return
-      
+
       console.error(`Erro ao carregar dados de ${tableName}:`, err)
-      setError(err.message || 'Erro ao carregar dados')
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar dados'
+      setError(errorMessage)
       if (showLoading) setLoading(false)
     }
   }, [tableName, select, filters, orderBy, getCachedData, setCachedData])
@@ -171,10 +172,10 @@ export function useOptimizedMutation() {
   const [error, setError] = useState<string | null>(null)
 
   const mutate = useCallback(async (
-    operation: () => Promise<any>,
+    operation: () => Promise<unknown>,
     options?: {
-      onSuccess?: (result: any) => void
-      onError?: (error: any) => void
+      onSuccess?: (result: unknown) => void
+      onError?: (error: unknown) => void
       invalidateCache?: string[]
     }
   ) => {
@@ -197,14 +198,14 @@ export function useOptimizedMutation() {
 
       setLoading(false)
       return result
-    } catch (err: any) {
-      const errorMessage = err.message || 'Erro na operação'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro na operação'
       setError(errorMessage)
-      
+
       if (options?.onError) {
         options.onError(err)
       }
-      
+
       setLoading(false)
       throw err
     }

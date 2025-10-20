@@ -82,7 +82,7 @@ export function createLazyLoader<T>(
 }
 
 // Cache simples para resultados de API
-const apiCache = new Map<string, { data: any; timestamp: number }>()
+const apiCache = new Map<string, { data: unknown; timestamp: number }>()
 
 export function createApiCache<T>(
   cacheTimeMs = 5 * 60 * 1000 // 5 minutos por padrão
@@ -98,7 +98,7 @@ export function createApiCache<T>(
         return null
       }
       
-      return cached.data
+      return cached.data as T
     },
     
     set(key: string, data: T): void {

@@ -214,7 +214,7 @@ export function ComissaoCard({ comissao, userRole, isHighlight = false }: Comiss
         {comissao.observacoes && (
           <div className="mt-4 p-3 bg-slate-900 rounded-lg">
             <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Observações</p>
-            <p className="text-sm text-slate-300 italic">"{comissao.observacoes}"</p>
+            <p className="text-sm text-slate-300 italic">&ldquo;{comissao.observacoes}&rdquo;</p>
           </div>
         )}
 

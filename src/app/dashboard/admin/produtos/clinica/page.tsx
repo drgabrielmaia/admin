@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,11 +11,10 @@ import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { MovimentacaoModal } from '@/components/modals/MovimentacaoModal'
-import { 
+import {
   Plus,
   TrendingUp,
   DollarSign,
-  Users,
   Target,
   Edit,
   Trash2,
@@ -62,36 +61,7 @@ export default function ClinicaPage() {
     custo: ''
   })
 
-  useEffect(() => {
-    if (user?.funcao === 'admin') {
-      loadData()
-    }
-  }, [user])
-
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      
-      // Carregar produtos da clínica
-      const { data: produtosData } = await supabase
-        .from('produtos')
-        .select('*')
-        .eq('tipo', 'clinica')
-        .order('created_at', { ascending: false })
-
-      setProdutos(produtosData || [])
-
-      // Calcular vendas e lucros
-      await calcularVendas()
-
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const calcularVendas = async () => {
+  const calcularVendas = useCallback(async () => {
     try {
       // USAR A MESMA LÓGICA UNIFICADA DO BPO
       // Buscar todas as vendas APROVADAS de produtos da clínica
@@ -117,14 +87,14 @@ export default function ClinicaPage() {
         const totalVendas = vendasData.length
         const faturamentoVendas = vendasData.reduce((acc, v) => acc + (v.valor || 0), 0)
         const custoVendas = vendasData.reduce((acc, v) => {
-          const produto = v.produtos as any
+          const produto = v.produtos as { custo?: number } | null
           return acc + (produto?.custo || 0)
         }, 0)
 
         // Adicionar movimentações manuais
         const entradasExtras = movimentacoesData?.filter(mov => mov.tipo === 'entrada')
           .reduce((sum, mov) => sum + mov.valor, 0) || 0
-        
+
         const saidasExtras = movimentacoesData?.filter(mov => mov.tipo === 'saida')
           .reduce((sum, mov) => sum + mov.valor, 0) || 0
 
@@ -143,7 +113,36 @@ export default function ClinicaPage() {
     } catch (error) {
       console.error('Erro ao calcular vendas:', error)
     }
-  }
+  }, [])
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+
+      // Carregar produtos da clínica
+      const { data: produtosData } = await supabase
+        .from('produtos')
+        .select('*')
+        .eq('tipo', 'clinica')
+        .order('created_at', { ascending: false })
+
+      setProdutos(produtosData || [])
+
+      // Calcular vendas e lucros
+      await calcularVendas()
+
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [calcularVendas])
+
+  useEffect(() => {
+    if (user?.funcao === 'admin') {
+      loadData()
+    }
+  }, [user, loadData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -479,7 +478,7 @@ export default function ClinicaPage() {
               <div className="text-center text-slate-400 py-8">
                 <Stethoscope className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhum produto da clínica cadastrado</p>
-                <p className="text-sm">Clique em "Novo Produto" para começar</p>
+                <p className="text-sm">Clique em &ldquo;Novo Produto&rdquo; para começar</p>
               </div>
             )}
           </CardContent>

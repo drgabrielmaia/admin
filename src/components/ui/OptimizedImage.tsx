@@ -83,3 +83,4 @@ export const OptimizedImage = memo(({
     </div>
   )
 })
+OptimizedImage.displayName = 'OptimizedImage'

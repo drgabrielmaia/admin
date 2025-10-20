@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -58,7 +57,6 @@ export function ModernSDRDashboard() {
       const hoje = new Date()
       const inicioSemana = new Date(hoje)
       inicioSemana.setDate(hoje.getDate() - hoje.getDay())
-      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
 
       // Simular dados por enquanto (você pode conectar com o banco depois)
       setStats({

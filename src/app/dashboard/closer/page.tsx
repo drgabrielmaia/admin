@@ -49,10 +49,10 @@ interface CloserDashboardData {
 
 export default function CloserDashboard() {
   // Proteção de acesso - apenas closers
-  const { hasAccess, loading: authLoading } = useRoleProtection({ 
-    allowedRoles: ['closer'] 
+  useRoleProtection({
+    allowedRoles: ['closer']
   })
-  
+
   const { user } = useAuth()
   const [data, setData] = useState<CloserDashboardData | null>(null)
   const [loading, setLoading] = useState(true)

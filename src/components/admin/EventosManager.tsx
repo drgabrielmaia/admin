@@ -12,12 +12,11 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { MovimentacaoModal } from '@/components/modals/MovimentacaoModal'
-import { 
-  AlertCircle, 
-  Plus, 
+import {
+  AlertCircle,
+  Plus,
   Calendar,
   MapPin,
-  Users,
   DollarSign,
   TrendingUp,
   Edit,

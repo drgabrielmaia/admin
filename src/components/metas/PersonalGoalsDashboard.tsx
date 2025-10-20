@@ -16,30 +16,24 @@ import {
   SelectValue 
 } from '@/components/ui/select'
 import { ModernChart } from '@/components/charts/ModernChart'
-import { 
-  Target, 
-  TrendingUp, 
+import {
+  Target,
+  TrendingUp,
   Calendar,
   DollarSign,
   Users,
   Phone,
   Settings,
-  Plus,
-  Edit3,
   Save,
   X,
-  Zap,
   Award,
   Clock,
-  BarChart3,
-  PieChart,
   Activity,
   Building,
   BookOpen,
   Monitor,
   Handshake,
-  Factory,
-  Filter
+  Factory
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -636,7 +630,7 @@ export function PersonalGoalsDashboard() {
 
           {/* Goals Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {metas.map((meta, index) => {
+            {metas.map((meta) => {
               const categoria = categorias.find(c => c.key === meta.categoria)
               if (!categoria) return null
 

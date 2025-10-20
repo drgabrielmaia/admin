@@ -226,7 +226,7 @@ export function MetasManager() {
 
       if (editingMeta) {
         // Atualizar meta existente
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('metas')
           .update(metaData)
           .eq('id', editingMeta.id)
@@ -238,7 +238,7 @@ export function MetasManager() {
         console.log('✅ Meta atualizada com sucesso')
       } else {
         // Criar nova meta
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('metas')
           .insert(metaData)
           .select()
@@ -319,7 +319,6 @@ export function MetasManager() {
   const formatValor = (valor: number | null | undefined, categoria: string) => {
     if (!valor && valor !== 0) return '0'
     
-    const info = getCategoriaInfo(categoria)
     if (categoria === 'faturamento' || categoria === 'comissao') {
       return formatCurrency(valor)
     }

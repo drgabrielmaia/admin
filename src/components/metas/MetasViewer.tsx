@@ -5,15 +5,14 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Target, 
-  Users, 
-  User, 
-  TrendingUp, 
-  DollarSign, 
-  Calendar, 
-  CheckCircle, 
-  Clock, 
+import {
+  Target,
+  Users,
+  User,
+  TrendingUp,
+  DollarSign,
+  CheckCircle,
+  Clock,
   AlertCircle,
   Trophy
 } from 'lucide-react'

@@ -76,7 +76,6 @@ export function MetasGeraisDisplay() {
           // Calcular progresso baseado na categoria e período
           const dataInicio = new Date(meta.data_inicio)
           const dataFim = new Date(meta.data_fim)
-          const hoje = new Date()
 
           if (meta.categoria === 'faturamento') {
             // Buscar faturamento total no período

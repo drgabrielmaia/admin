@@ -75,10 +75,9 @@ export function BirthdayIcon({
 }
 
 // Componente para badge de aniversário mais elaborado
-export function BirthdayBadge({ 
-  birthDate, 
-  userName = 'usuário',
-  className 
+export function BirthdayBadge({
+  birthDate,
+  className
 }: Omit<BirthdayIconProps, 'size'>) {
   const birthdayInfo = getBirthdayInfo(birthDate)
 

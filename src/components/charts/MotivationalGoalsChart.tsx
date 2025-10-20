@@ -181,6 +181,7 @@ export function MotivationalGoalsChart() {
     ]
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,

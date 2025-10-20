@@ -242,8 +242,7 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 
 const ShaderMaterial = ({
   source,
-  uniforms,
-  maxFps = 60,
+  uniforms
 }: {
   source: string;
   hovered?: boolean;
@@ -252,6 +251,7 @@ const ShaderMaterial = ({
 }) => {
   const { size } = useThree();
   const ref = useRef<THREE.Mesh>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let lastFrameTime = 0;
 
   useFrame(({ clock }) => {
@@ -495,7 +495,6 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [step, setStep] = useState<"email" | "code" | "success">("email");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [initialCanvasVisible, setInitialCanvasVisible] = useState(true);
   const [reverseCanvasVisible, setReverseCanvasVisible] = useState(false);
 

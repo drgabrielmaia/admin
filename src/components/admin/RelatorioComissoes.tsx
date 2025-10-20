@@ -10,10 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { 
-  AlertCircle, 
-  Download, 
-  Calendar,
+import {
+  AlertCircle,
+  Download,
   Filter,
   FileText,
   DollarSign,

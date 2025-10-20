@@ -274,10 +274,6 @@ export function RegistrarChamadaForm({ onSuccess, onCancel }: RegistrarChamadaFo
     })
   }
 
-  const getLeadInfo = (leadId: string) => {
-    const lead = leads.find(l => l.id === leadId)
-    return lead ? `${lead.nome} (${lead.origem})` : ''
-  }
 
   return (
     <Card className="bg-slate-900 border-slate-800">

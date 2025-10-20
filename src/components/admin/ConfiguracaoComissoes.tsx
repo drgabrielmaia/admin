@@ -11,17 +11,16 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { 
-  AlertCircle, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  AlertCircle,
+  Plus,
+  Edit,
+  Trash2,
   Save,
   X,
   Factory,
   Package,
-  Percent,
-  Target
+  Percent
 } from 'lucide-react'
 
 interface ConfiguracaoComissao {
@@ -52,7 +51,7 @@ interface Produto {
 }
 
 export function ConfiguracaoComissoes() {
-  const { user } = useAuth()
+  useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -124,7 +123,7 @@ export function ConfiguracaoComissoes() {
     }
   }, [formData.motor_type, formData.tipo_config])
 
-  const handleSave = async (configId?: string) => {
+  const handleSave = async () => {
     try {
       setError('')
       setSuccess('')
@@ -470,7 +469,7 @@ export function ConfiguracaoComissoes() {
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button onClick={() => handleSave(editando || undefined)}>
+              <Button onClick={() => handleSave()}>
                 <Save className="h-4 w-4 mr-2" />
                 {editando ? 'Atualizar' : 'Criar'}
               </Button>

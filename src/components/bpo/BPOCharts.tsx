@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -37,12 +37,8 @@ interface BPOChartsProps {
 }
 
 export function BPOCharts({
-  motorType,
   motorName,
-  motorColor,
-  dadosAnalyticos,
-  dadosAgrupados = [],
-  periodoSelecionado = 'mensal'
+  dadosAnalyticos
 }: BPOChartsProps) {
   const [periodoAnalise, setPeriodoAnalise] = useState('mes_atual')
   const [tipoGrafico, setTipoGrafico] = useState('visao_geral')

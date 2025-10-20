@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,7 +56,6 @@ interface GastosImovelProps {
 
 export function GastosImovel({ imovelId }: GastosImovelProps) {
   const { user } = useAuth()
-  const router = useRouter()
   const [imovel, setImovel] = useState<Imovel | null>(null)
   const [gastos, setGastos] = useState<Gasto[]>([])
   const [loading, setLoading] = useState(true)

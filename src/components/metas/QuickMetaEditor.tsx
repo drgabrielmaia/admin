@@ -41,7 +41,7 @@ interface MetaMes {
 }
 
 export function QuickMetaEditor() {
-  const { user } = useAuth()
+  useAuth()
   const [metas, setMetas] = useState<MetaMes[]>([])
   const [loading, setLoading] = useState(true)
   const [salvando, setSalvando] = useState<string | null>(null)

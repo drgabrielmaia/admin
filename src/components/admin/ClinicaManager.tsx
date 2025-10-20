@@ -10,19 +10,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown,
+import {
+  Plus,
+  Edit,
+  Trash2,
+  DollarSign,
+  TrendingUp,
   X,
   Stethoscope,
   ArrowUp,
   ArrowDown,
   Calculator,
-  Calendar,
   FileText
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'

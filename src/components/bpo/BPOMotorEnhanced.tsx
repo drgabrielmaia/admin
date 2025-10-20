@@ -14,11 +14,9 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
-  PiggyBank,
   ArrowUpCircle,
   ArrowDownCircle,
   Plus,
-  Edit,
   Trash2,
   BarChart3,
   Calendar,
@@ -317,7 +315,7 @@ export function BPOMotorEnhanced({
       console.log('🔄 Carregando dados REAIS do banco para:', businessType)
 
       // 1. FATURAMENTO REAL das movimentações
-      const { data: movimentacoes, error: movError } = await supabase
+      const { data: movimentacoes } = await supabase
         .from('movimentacoes_financeiras')
         .select('*')
         .eq('negocio', businessType)
@@ -355,7 +353,7 @@ export function BPOMotorEnhanced({
       }
 
       // 2. VENDAS REAIS do sistema (chamadas aprovadas)
-      const { data: vendas, error: vendasError } = await supabase
+      const { data: vendas } = await supabase
         .from('chamadas')
         .select('valor, data_chamada')
         .eq('resultado', 'venda')
@@ -373,7 +371,7 @@ export function BPOMotorEnhanced({
       const margem_lucro_percent = faturamento_total > 0 ? ((lucro_total / faturamento_total) * 100) : 0
 
       // 4. HISTÓRICO REAL
-      const { data: historico, error: histError } = await supabase
+      const { data: historico } = await supabase
         .from('movimentacoes_financeiras')
         .select('data_movimento, tipo, valor')
         .eq('negocio', businessType)

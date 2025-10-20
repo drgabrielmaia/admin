@@ -230,8 +230,7 @@ export function VendasAprovacao() {
       return
     }
     
-    const { observacoes: _, ...vendaSemObservacoes } = venda
-    console.log('📋 Dados da venda:', vendaSemObservacoes)
+    console.log('📋 Dados da venda:', venda)
     
     // Usar produto já selecionado manualmente ou produto da venda/lead
     let produtoId = produtoSelecionado[vendaId] || venda.produto_id

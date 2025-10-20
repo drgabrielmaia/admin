@@ -53,10 +53,8 @@ interface LazySectionProps {
   fallback?: React.ReactNode
 }
 
-export function LazySection({ 
-  children, 
-  threshold = 0.1, 
-  rootMargin = '50px',
+export function LazySection({
+  children,
   fallback 
 }: LazySectionProps) {
   return (

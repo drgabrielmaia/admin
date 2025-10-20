@@ -31,10 +31,8 @@ import {
   ChevronDown,
   ChevronRight,
   BarChart3,
-  Home,
   Stethoscope
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface DashboardLayoutProps {
@@ -44,7 +42,6 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const { user, logout } = useAuth()
-  const router = useRouter()
   const [showProdutos, setShowProdutos] = useState(false)
 
   const handleLogout = async () => {

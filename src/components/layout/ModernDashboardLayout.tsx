@@ -35,8 +35,6 @@ import {
   X,
   Bell,
   Search,
-  Moon,
-  Sun,
   BarChart3,
   Percent,
   Stethoscope,
@@ -44,7 +42,7 @@ import {
   FileText,
   UserCheck
 } from 'lucide-react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { OptimizedLink, NavLink } from '@/components/ui/optimized-link'
 
 interface ModernDashboardLayoutProps {
@@ -54,11 +52,9 @@ interface ModernDashboardLayoutProps {
 
 export function ModernDashboardLayout({ children, title }: ModernDashboardLayoutProps) {
   const { user, logout } = useAuth()
-  const router = useRouter()
   const pathname = usePathname()
   const [showProdutos, setShowProdutos] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(true)
   
   // Manter o estado do submenu produtos persistente mesmo durante navegação
   useEffect(() => {

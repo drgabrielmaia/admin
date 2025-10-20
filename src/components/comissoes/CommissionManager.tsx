@@ -15,23 +15,16 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { 
+import {
   DollarSign,
   Percent,
   TrendingUp,
-  Users,
   Settings,
   Save,
   RefreshCw,
-  Award,
-  Target,
-  Zap,
   Calculator,
-  PiggyBank,
-  Crown,
-  Star
+  PiggyBank
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -204,7 +197,6 @@ export function CommissionManager() {
   }
 
   const resultado = calcularSimulacao()
-  const selectedUserData = usuarios.find(u => u.id === selectedUser)
 
   return (
     <div className="space-y-8">

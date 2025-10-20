@@ -15,7 +15,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onToggleRegister }: LoginFormProps) {
-  const { login, user } = useAuth()
+  const { login } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

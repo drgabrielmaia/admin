@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -21,7 +21,6 @@ import {
   Activity,
   Star,
   Sparkles,
-  Edit3,
   MoreVertical,
   Trash2
 } from 'lucide-react'
@@ -351,7 +350,7 @@ export function MentoradoDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {indicacoes.map((indicacao, index) => (
+                {indicacoes.map((indicacao) => (
                   <div key={indicacao.id} className={clsx(
                     "p-6 rounded-xl border transition-all duration-200 hover:shadow-lg",
                     "bg-muted/20 border-border/50 hover:border-primary/20"

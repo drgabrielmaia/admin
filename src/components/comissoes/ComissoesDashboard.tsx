@@ -4,23 +4,18 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Calendar, 
+import {
+  DollarSign,
+  TrendingUp,
+  Calendar,
   Target,
-  Phone,
-  Users,
   Filter,
   Award,
   Clock,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { ComissaoCard } from './ComissaoCard'
 
 interface Comissao {
@@ -194,32 +189,8 @@ export function ComissoesDashboard() {
     })
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pendente': return 'bg-yellow-900 text-yellow-300 border-yellow-700'
-      case 'paga': return 'bg-green-900 text-green-300 border-green-700'
-      case 'cancelada': return 'bg-red-900 text-red-300 border-red-700'
-      default: return 'bg-slate-700 text-slate-300 border-slate-600'
-    }
-  }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pendente': return <Clock className="h-3 w-3" />
-      case 'paga': return <CheckCircle className="h-3 w-3" />
-      case 'cancelada': return <XCircle className="h-3 w-3" />
-      default: return null
-    }
-  }
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pendente': return 'Pendente'
-      case 'paga': return 'Paga'
-      case 'cancelada': return 'Cancelada'
-      default: return status
-    }
-  }
 
   // Filtrar comissões
   const comissoesFiltradas = comissoes.filter(comissao => {

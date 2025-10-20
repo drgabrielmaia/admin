@@ -6,21 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { 
-  AlertCircle, 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  CheckCircle, 
-  Clock, 
-  XCircle,
+import {
+  AlertCircle,
+  TrendingUp,
+  Users,
+  DollarSign,
+  CheckCircle,
+  Clock,
   Eye,
-  Edit,
   Check,
   X
 } from 'lucide-react'
@@ -97,7 +94,7 @@ function ModalConversao({ indicacao, onClose, onSuccess }: ModalConversaoProps) 
     setError('')
 
     try {
-      const { data, error } = await supabase.rpc('converter_indicacao', {
+      const { error } = await supabase.rpc('converter_indicacao', {
         p_indicacao_id: indicacao.id,
         p_valor_venda: parseFloat(valorVenda),
         p_closer_responsavel_id: closerResponsavel || null
@@ -242,7 +239,7 @@ export function IndicacoesManager() {
 
   const handleMarcarComissaoPaga = async (indicacaoId: string) => {
     try {
-      const { data, error } = await supabase.rpc('marcar_comissao_paga', {
+      const { error } = await supabase.rpc('marcar_comissao_paga', {
         p_indicacao_id: indicacaoId
       })
 

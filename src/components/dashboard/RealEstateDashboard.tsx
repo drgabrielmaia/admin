@@ -4,14 +4,11 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  Package, 
+import {
+  Package,
   TrendingUp,
-  DollarSign,
   Target,
   CheckCircle2,
-  Clock,
-  AlertCircle,
   BarChart3
 } from 'lucide-react'
 import Link from 'next/link'
@@ -101,7 +98,7 @@ export function RealEstateDashboard() {
         if (error) throw error
         setStats(data as RealEstateStats)
         console.log('✅ Dados da RPC:', data)
-      } catch (rpcError) {
+      } catch {
         console.log('⚠️ RPC não disponível, tentando view...')
         
         const { data, error } = await supabase

@@ -19,7 +19,7 @@ export default function TestSupabase() {
       addResult('Testando conexão com Supabase...')
       
       // Teste 1: Verificar se o Supabase responde
-      const { data, error } = await supabase.from('users').select('count').limit(1)
+      const { error } = await supabase.from('users').select('count').limit(1)
       
       if (error) {
         setConnectionStatus(`❌ Erro: ${error.message}`)
@@ -68,7 +68,7 @@ export default function TestSupabase() {
       addResult('Testando autenticação...')
       
       // Tentar fazer login com credenciais inexistentes para testar se o auth funciona
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: 'teste@teste.com',
         password: '123456'
       })

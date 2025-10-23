@@ -81,11 +81,11 @@ export default function SDRPipelinePage() {
     try {
       setUpdatingLead(leadId)
       
-      const updateData: any = { 
-        status: newStatus, 
-        updated_at: new Date().toISOString() 
+      const updateData: { status: string; updated_at: string; data_qualificacao?: string; data_agendamento?: string } = {
+        status: newStatus,
+        updated_at: new Date().toISOString()
       }
-      
+
       if (newStatus === 'qualificado') {
         updateData.data_qualificacao = new Date().toISOString()
       }
@@ -339,7 +339,7 @@ export default function SDRPipelinePage() {
 
                       {lead.observacoes && (
                         <p className="text-xs text-slate-500 mt-2 italic truncate">
-                          "{lead.observacoes}"
+                          &ldquo;{lead.observacoes}&rdquo;
                         </p>
                       )}
 

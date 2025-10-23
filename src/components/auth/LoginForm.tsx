@@ -58,8 +58,8 @@ export function LoginForm({ onToggleRegister }: LoginFormProps) {
         }
       }, 500)
       
-    } catch (err: any) {
-      setError(err.message || 'Erro no login')
+    } catch (err) {
+      setError((err as Error).message || 'Erro no login')
     } finally {
       setLoading(false)
     }

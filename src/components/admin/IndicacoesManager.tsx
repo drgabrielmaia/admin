@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -104,9 +104,10 @@ function ModalConversao({ indicacao, onClose, onSuccess }: ModalConversaoProps) 
 
       onSuccess()
       onClose()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao converter indicação:', error)
-      setError(error.message || 'Erro ao converter indicação')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao converter indicação'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -188,7 +189,7 @@ export function IndicacoesManager() {
   const [filtroStatus, setFiltroStatus] = useState<string>('todos')
   const [indicacaoSelecionada, setIndicacaoSelecionada] = useState<IndicacaoDetalhada | null>(null)
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -204,17 +205,18 @@ export function IndicacoesManager() {
       if (indicacoesError) throw indicacoesError
       setIndicacoes(indicacoesData || [])
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar dados:', error)
-      setError(error.message || 'Erro ao carregar dados')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar dados'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [filtroStatus])
 
   useEffect(() => {
     loadData()
-  }, [filtroStatus])
+  }, [loadData])
 
   const handleAtualizarStatus = async (indicacaoId: string, novoStatus: string, motivo?: string) => {
     try {
@@ -231,9 +233,10 @@ export function IndicacoesManager() {
       if (error) throw error
       
       await loadData()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar status:', error)
-      setError(error.message || 'Erro ao atualizar status')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar status'
+      setError(errorMessage)
     }
   }
 
@@ -246,9 +249,10 @@ export function IndicacoesManager() {
       if (error) throw error
       
       await loadData()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao marcar comissão como paga:', error)
-      setError(error.message || 'Erro ao marcar comissão como paga')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao marcar comissão como paga'
+      setError(errorMessage)
     }
   }
 

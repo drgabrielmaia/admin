@@ -1,30 +1,37 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function TestSupabase() {
   const [connectionStatus, setConnectionStatus] = useState<string>('Testando...')
-  const [tablesStatus, setTablesStatus] = useState<any[]>([])
-  const [testResults, setTestResults] = useState<string[]>([])
-
-  const addResult = (message: string) => {
-    setTestResults(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
+  interface TableStatus {
+    table: string
+    status: string
+    count?: number
+    error?: string
   }
 
-  const testConnection = async () => {
+  const [tablesStatus, setTablesStatus] = useState<TableStatus[]>([])
+  const [testResults, setTestResults] = useState<string[]>([])
+
+  const addResult = useCallback((message: string) => {
+    setTestResults(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
+  }, [])
+
+  const testConnection = useCallback(async () => {
     try {
       addResult('Testando conexão com Supabase...')
-      
+
       // Teste 1: Verificar se o Supabase responde
       const { error } = await supabase.from('users').select('count').limit(1)
-      
+
       if (error) {
         setConnectionStatus(`❌ Erro: ${error.message}`)
         addResult(`Erro na conexão: ${error.message}`)
-        
+
         if (error.message.includes('relation "users" does not exist')) {
           addResult('❌ PROBLEMA: Tabela "users" não existe! Execute o script SQL no Supabase.')
         }
@@ -32,47 +39,49 @@ export default function TestSupabase() {
         setConnectionStatus('✅ Conectado com sucesso!')
         addResult('✅ Conexão com Supabase funcionando')
       }
-    } catch (err: any) {
-      setConnectionStatus(`❌ Erro de conexão: ${err.message}`)
-      addResult(`Erro fatal: ${err.message}`)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      setConnectionStatus(`❌ Erro de conexão: ${errorMessage}`)
+      addResult(`Erro fatal: ${errorMessage}`)
     }
-  }
+  }, [addResult])
 
-  const testTables = async () => {
+  const testTables = useCallback(async () => {
     const tables = ['users', 'produtos', 'leads', 'chamadas', 'conversoes', 'metas']
-    const results: any[] = []
-    
+    const results: TableStatus[] = []
+
     for (const table of tables) {
       try {
         addResult(`Testando tabela ${table}...`)
         const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
-        
+
         if (error) {
           results.push({ table, status: '❌', error: error.message })
           addResult(`❌ Tabela ${table}: ${error.message}`)
         } else {
-          results.push({ table, status: '✅', count })
+          results.push({ table, status: '✅', count: count ?? 0 })
           addResult(`✅ Tabela ${table}: ${count} registros`)
         }
-      } catch (err: any) {
-        results.push({ table, status: '❌', error: err.message })
-        addResult(`❌ Tabela ${table}: ${err.message}`)
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+        results.push({ table, status: '❌', error: errorMessage })
+        addResult(`❌ Tabela ${table}: ${errorMessage}`)
       }
     }
-    
-    setTablesStatus(results)
-  }
 
-  const testAuth = async () => {
+    setTablesStatus(results)
+  }, [addResult])
+
+  const testAuth = useCallback(async () => {
     try {
       addResult('Testando autenticação...')
-      
+
       // Tentar fazer login com credenciais inexistentes para testar se o auth funciona
       const { error } = await supabase.auth.signInWithPassword({
         email: 'teste@teste.com',
         password: '123456'
       })
-      
+
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           addResult('✅ Sistema de autenticação funcionando (credenciais inválidas como esperado)')
@@ -82,22 +91,23 @@ export default function TestSupabase() {
       } else {
         addResult('❌ Login deveria ter falhado com credenciais de teste')
       }
-    } catch (err: any) {
-      addResult(`❌ Erro no teste de auth: ${err.message}`)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      addResult(`❌ Erro no teste de auth: ${errorMessage}`)
     }
-  }
+  }, [addResult])
 
-  const runAllTests = async () => {
+  const runAllTests = useCallback(async () => {
     setTestResults([])
     await testConnection()
     await testTables()
     await testAuth()
     addResult('=== TESTES CONCLUÍDOS ===')
-  }
+  }, [testConnection, testTables, testAuth, addResult])
 
   useEffect(() => {
     runAllTests()
-  }, [])
+  }, [runAllTests])
 
   return (
     <div className="min-h-screen bg-slate-950 p-6">

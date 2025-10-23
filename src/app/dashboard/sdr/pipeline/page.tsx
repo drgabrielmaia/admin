@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -49,18 +49,12 @@ export default function SDRPipelinePage() {
   const [dragOverStatus, setDragOverStatus] = useState<string | null>(null)
   const [updatingLead, setUpdatingLead] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (user) {
-      loadPipelineData()
-    }
-  }, [user])
-
-  const loadPipelineData = async () => {
+  const loadPipelineData = useCallback(async () => {
     if (!user || user.funcao !== 'sdr') return
 
     try {
       setLoading(true)
-      
+
       const { data, error } = await supabase
         .from('leads')
         .select('*')
@@ -75,7 +69,14 @@ export default function SDRPipelinePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user) {
+      loadPipelineData()
+    }
+  }, [loadPipelineData])
+
 
   const moveLeadToStatus = async (leadId: string, newStatus: string) => {
     try {

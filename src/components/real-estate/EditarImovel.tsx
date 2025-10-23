@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Package, 
+import {
+  Package,
   Save,
   ArrowLeft,
   Loader2
@@ -38,6 +38,26 @@ interface ImovelData {
   data_venda: string | null
 }
 
+interface FormData {
+  nome: string
+  tipo: string
+  endereco: string
+  cidade: string
+  estado: string
+  cep: string
+  metragem: string
+  quartos: string
+  banheiros: string
+  vagas_garagem: string
+  descricao: string
+  valor_compra: string
+  valor_venda_pretendido: string
+  valor_venda_final: string
+  status: string
+  data_compra: string
+  data_venda: string
+}
+
 interface EditarImovelProps {
   imovelId: string
 }
@@ -47,13 +67,27 @@ export function EditarImovel({ imovelId }: EditarImovelProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [imovel, setImovel] = useState<ImovelData | null>(null)
-  const [formData, setFormData] = useState<any>({})
+  const [formData, setFormData] = useState<FormData>({
+    nome: '',
+    tipo: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    metragem: '',
+    quartos: '',
+    banheiros: '',
+    vagas_garagem: '',
+    descricao: '',
+    valor_compra: '',
+    valor_venda_pretendido: '',
+    valor_venda_final: '',
+    status: '',
+    data_compra: '',
+    data_venda: ''
+  })
 
-  useEffect(() => {
-    loadImovel()
-  }, [imovelId])
-
-  const loadImovel = async () => {
+  const loadImovel = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -93,10 +127,14 @@ export function EditarImovel({ imovelId }: EditarImovelProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [imovelId])
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev: any) => ({
+  useEffect(() => {
+    loadImovel()
+  }, [loadImovel])
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({
       ...prev,
       [field]: value
     }))
@@ -119,7 +157,7 @@ export function EditarImovel({ imovelId }: EditarImovelProps) {
     try {
       setSaving(true)
 
-      const updateData: any = {
+      const updateData: Partial<ImovelData> = {
         nome: formData.nome,
         tipo: formData.tipo,
         endereco: formData.endereco,

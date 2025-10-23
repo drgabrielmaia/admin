@@ -13,6 +13,8 @@ import {
   Legend,
   Filler,
   ArcElement,
+  ChartOptions,
+  TooltipItem,
 } from 'chart.js'
 
 ChartJS.register(
@@ -86,7 +88,7 @@ export function ModernChart({ type, data, title, height = 300, className }: Mode
           weight: '400'
         },
         callbacks: {
-          label: function(context: any) {
+          label: function(context: TooltipItem<'line' | 'bar' | 'doughnut'>) {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
@@ -135,13 +137,13 @@ export function ModernChart({ type, data, title, height = 300, className }: Mode
           },
           color: '#64748B',
           padding: 10,
-          callback: function(value: any) {
+          callback: function(value: string | number) {
             return new Intl.NumberFormat('pt-BR', {
               style: 'currency',
               currency: 'BRL',
               notation: 'compact',
               maximumFractionDigits: 1
-            }).format(value);
+            }).format(Number(value));
           }
         }
       }
@@ -172,15 +174,16 @@ export function ModernChart({ type, data, title, height = 300, className }: Mode
   }
 
   const renderChart = () => {
+    const options = commonOptions as ChartOptions<'line' | 'bar' | 'doughnut'>;
     switch (type) {
       case 'line':
-        return <Line data={enhancedData} options={commonOptions as any} />
+        return <Line data={enhancedData} options={options as any} />
       case 'bar':
-        return <Bar data={enhancedData} options={commonOptions as any} />
+        return <Bar data={enhancedData} options={options as any} />
       case 'doughnut':
-        return <Doughnut data={enhancedData} options={commonOptions as any} />
+        return <Doughnut data={enhancedData} options={options as any} />
       default:
-        return <Line data={enhancedData} options={commonOptions as any} />
+        return <Line data={enhancedData} options={options as any} />
     }
   }
 

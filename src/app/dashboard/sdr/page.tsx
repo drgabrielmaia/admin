@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRoleProtection } from '@/hooks/useRoleProtection'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { KPICard } from '@/components/dashboard/KPICard'
@@ -51,27 +51,12 @@ export default function SDRDashboard() {
   const [data, setData] = useState<SDRDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (user?.id) {
-      loadDashboardData()
-    }
-  }, [user])
-
-  // Se ainda carregando auth ou sem acesso, não renderizar
-  if (authLoading || !hasAccess) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     if (!user?.id) return
 
     try {
       setLoading(true)
-      
+
       const hoje = new Date()
       const inicioSemana = new Date(hoje)
       inicioSemana.setDate(hoje.getDate() - hoje.getDay())
@@ -83,7 +68,7 @@ export default function SDRDashboard() {
         { count: leadsSemana },
         { count: leadsMes },
         { count: agendamentosHoje },
-        { count: agendamentosSemana },  
+        { count: agendamentosSemana },
         { count: agendamentosMes },
         { data: leadsRecentes }
       ] = await Promise.all([
@@ -92,13 +77,13 @@ export default function SDRDashboard() {
           .select('*', { count: 'exact', head: true })
           .eq('sdr_id', user.id)
           .gte('created_at', hoje.toISOString().split('T')[0]),
-        
+
         // Leads semana
         supabase.from('leads')
           .select('*', { count: 'exact', head: true })
           .eq('sdr_id', user.id)
           .gte('created_at', inicioSemana.toISOString()),
-        
+
         // Leads mês
         supabase.from('leads')
           .select('*', { count: 'exact', head: true })
@@ -181,7 +166,23 @@ export default function SDRDashboard() {
     } finally {
       setLoading(false)
     }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user?.id) {
+      loadDashboardData()
+    }
+  }, [loadDashboardData])
+
+  // Se ainda carregando auth ou sem acesso, não renderizar
+  if (authLoading || !hasAccess) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
   }
+
 
   if (loading) {
     return (

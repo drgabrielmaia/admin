@@ -24,7 +24,13 @@ interface BPOChartsProps {
     custos_total: number
     lucro_total: number
     margem_lucro_percent: number
-    historico_mensal: any[]
+    historico_mensal: {
+      mes_ano: string;
+      total_movimentacoes: number;
+      total_entradas: number;
+      total_saidas: number;
+      saldo_liquido: number;
+    }[]
     pix_total: number
     debito_total: number
     credito_total: number
@@ -32,7 +38,13 @@ interface BPOChartsProps {
     despesas_operacionais: number
     despesas_pessoal: number
   }
-  dadosAgrupados?: any[]
+  dadosAgrupados?: {
+    periodo: string;
+    faturamento: number;
+    custos: number;
+    lucro: number;
+    margem_lucro: number;
+  }[]
   periodoSelecionado?: 'diario' | 'semanal' | 'mensal' | 'anual'
 }
 

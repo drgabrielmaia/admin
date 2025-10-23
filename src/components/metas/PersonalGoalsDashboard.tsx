@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
 import { ModernChart } from '@/components/charts/ModernChart'
 import {
@@ -33,7 +33,8 @@ import {
   BookOpen,
   Monitor,
   Handshake,
-  Factory
+  Factory,
+  LucideIcon
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -54,6 +55,23 @@ interface PersonalMeta {
   updated_at?: string
 }
 
+interface MotorNegocio {
+  key: string
+  label: string
+  icon: LucideIcon
+  color: string
+  description: string
+}
+
+interface CategoriaItem {
+  key: string
+  label: string
+  icon: LucideIcon
+  color: string
+  suffix: string
+  description: string
+}
+
 interface Usuario {
   id: string
   nome: string
@@ -71,7 +89,7 @@ export function PersonalGoalsDashboard() {
   const [selectedEngine, setSelectedEngine] = useState<string>('todos')
   const [metasPorMotor, setMetasPorMotor] = useState<Record<string, PersonalMeta[]>>({})
 
-  const motoresNegocio = [
+  const motoresNegocio: MotorNegocio[] = useMemo(() => [
     {
       key: 'todos',
       label: 'Todos os Motores',
@@ -128,9 +146,9 @@ export function PersonalGoalsDashboard() {
       color: 'indigo',
       description: 'Parcerias estratégicas e afiliados'
     }
-  ]
+  ], [])
 
-  const categorias = [
+  const categorias: CategoriaItem[] = useMemo(() => [
     {
       key: 'leads',
       label: 'Leads Gerados',
@@ -163,28 +181,9 @@ export function PersonalGoalsDashboard() {
       suffix: 'R$',
       description: 'Comissões acumuladas'
     }
-  ]
+  ], [])
 
-  useEffect(() => {
-    loadUsuarios()
-    if (user) {
-      setSelectedUser(user.id)
-    }
-  }, [user])
-
-  useEffect(() => {
-    if (selectedUser) {
-      loadMetas(selectedUser)
-    }
-  }, [selectedUser, usuarios])
-  
-  useEffect(() => {
-    if (metasPorMotor[selectedEngine]) {
-      setMetas(metasPorMotor[selectedEngine])
-    }
-  }, [selectedEngine, metasPorMotor])
-
-  const loadUsuarios = async () => {
+  const loadUsuarios = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -197,9 +196,17 @@ export function PersonalGoalsDashboard() {
     } catch (error) {
       console.error('Erro ao carregar usuários:', error)
     }
-  }
+  }, [])
 
-  const loadMetas = async (userId: string) => {
+  useEffect(() => {
+    loadUsuarios()
+    if (user) {
+      setSelectedUser(user.id)
+    }
+  }, [user, loadUsuarios])
+
+  const loadMetas = useCallback(async (userId: string) => {
+
     try {
       setLoading(true)
       
@@ -227,7 +234,7 @@ export function PersonalGoalsDashboard() {
             return {
               id: metaExistente.id,
               user_id: userId,
-              categoria: cat.key as any,
+              categoria: cat.key as PersonalMeta['categoria'],
               motor_negocio: metaExistente.motor_negocio || 'todos',
               valor_meta_diaria: metaExistente.valor_meta_diaria || 0,
               valor_meta_mensal: metaExistente.valor_meta_mensal || 0,
@@ -280,8 +287,8 @@ export function PersonalGoalsDashboard() {
           
           return {
             user_id: userId,
-            categoria: cat.key as any,
-            motor_negocio: motor.key as any,
+            categoria: cat.key as PersonalMeta['categoria'],
+            motor_negocio: motor.key as PersonalMeta['motor_negocio'],
             valor_meta_diaria: getDefaultValue(cat.key, 'diario'),
             valor_meta_mensal: getDefaultValue(cat.key, 'mensal'),
             valor_meta_anual: getDefaultValue(cat.key, 'anual'),
@@ -354,7 +361,19 @@ export function PersonalGoalsDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [usuarios, selectedEngine, categorias, motoresNegocio])
+
+  useEffect(() => {
+    if (selectedUser) {
+      loadMetas(selectedUser)
+    }
+  }, [selectedUser, loadMetas])
+
+  useEffect(() => {
+    if (metasPorMotor[selectedEngine]) {
+      setMetas(metasPorMotor[selectedEngine])
+    }
+  }, [selectedEngine, metasPorMotor])
 
   const handleSaveMeta = async (meta: PersonalMeta) => {
     try {
@@ -391,7 +410,9 @@ export function PersonalGoalsDashboard() {
       }
 
       // Recarregar metas
-      await loadMetas(selectedUser)
+      if (selectedUser) {
+        await loadMetas(selectedUser)
+      }
       setEditingMeta(null)
     } catch (error) {
       console.error('Erro ao salvar meta:', error)

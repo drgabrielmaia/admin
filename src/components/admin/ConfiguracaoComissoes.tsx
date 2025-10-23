@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -74,7 +74,7 @@ export function ConfiguracaoComissoes() {
     meta_vendas: 0
   })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -92,13 +92,14 @@ export function ConfiguracaoComissoes() {
       if (configError) throw configError
       setConfiguracoes(configData || [])
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar dados:', error)
-      setError(error.message || 'Erro ao carregar dados')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar dados'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const loadProdutos = async (motorType: string) => {
     try {
@@ -107,7 +108,7 @@ export function ConfiguracaoComissoes() {
 
       if (error) throw error
       setProdutos(data || [])
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar produtos:', error)
       setProdutos([])
     }
@@ -115,7 +116,7 @@ export function ConfiguracaoComissoes() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   useEffect(() => {
     if (formData.motor_type && formData.tipo_config === 'produto') {
@@ -185,9 +186,10 @@ export function ConfiguracaoComissoes() {
       // Auto-hide success message
       setTimeout(() => setSuccess(''), 3000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar configuração:', error)
-      setError(error.message || 'Erro ao salvar configuração')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar configuração'
+      setError(errorMessage)
     }
   }
 
@@ -226,9 +228,10 @@ export function ConfiguracaoComissoes() {
       await loadData()
 
       setTimeout(() => setSuccess(''), 3000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir configuração:', error)
-      setError(error.message || 'Erro ao excluir configuração')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir configuração'
+      setError(errorMessage)
     }
   }
 
@@ -242,9 +245,10 @@ export function ConfiguracaoComissoes() {
       if (error) throw error
       
       await loadData()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao alterar status:', error)
-      setError(error.message || 'Erro ao alterar status')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao alterar status'
+      setError(errorMessage)
     }
   }
 
@@ -317,7 +321,7 @@ export function ConfiguracaoComissoes() {
             • <strong>Bônus por Meta:</strong> % adicional se bater meta de vendas no mês
           </p>
           <p className="text-sm text-gray-600">
-            • <strong>Prioridade:</strong> Produto específico {'>'} Motor geral {'>'} Sistema padrão (0%)
+            • <strong>Prioridade:</strong> Produto específico &gt; Motor geral &gt; Sistema padrão (0%)
           </p>
         </CardContent>
       </Card>

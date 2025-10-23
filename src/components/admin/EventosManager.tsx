@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -82,10 +82,10 @@ export function EventosManager() {
     { value: 'cancelado', label: 'Cancelado' }
   ]
 
-  const loadEventos = async () => {
+  const loadEventos = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       const { data, error } = await supabase
         .from('vw_eventos_dashboard')
         .select('*')
@@ -94,17 +94,18 @@ export function EventosManager() {
       if (error) throw error
       setEventos(data || [])
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao carregar eventos:', error)
-      setError(error.message || 'Erro ao carregar eventos')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar eventos'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadEventos()
-  }, [])
+  }, [loadEventos])
 
   const handleSave = async (eventoId?: string) => {
     try {
@@ -178,9 +179,10 @@ export function EventosManager() {
       // Auto-hide success message
       setTimeout(() => setSuccess(''), 3000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar evento:', error)
-      setError(error.message || 'Erro ao salvar evento')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar evento'
+      setError(errorMessage)
     }
   }
 
@@ -213,9 +215,10 @@ export function EventosManager() {
       await loadEventos()
 
       setTimeout(() => setSuccess(''), 3000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir evento:', error)
-      setError(error.message || 'Erro ao excluir evento')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir evento'
+      setError(errorMessage)
     }
   }
 

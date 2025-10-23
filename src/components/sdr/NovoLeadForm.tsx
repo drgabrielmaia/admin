@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { forceUpdateLeadsMetas } from '@/lib/metas-utils'
@@ -18,11 +18,22 @@ interface NovoLeadFormProps {
   onCancel?: () => void
 }
 
+interface Produto {
+  id: string
+  nome: string
+  tipo: string
+  preco: number
+  custo: number
+  descricao: string
+  valor_exibicao: number
+  motor_display: string
+}
+
 export function NovoLeadForm({ onSuccess, onCancel }: NovoLeadFormProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [produtos, setProdutos] = useState<any[]>([])
+  const [produtos, setProdutos] = useState<Produto[]>([])
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -51,12 +62,7 @@ export function NovoLeadForm({ onSuccess, onCancel }: NovoLeadFormProps) {
     'Outro'
   ]
 
-  // Carregar produtos ao montar componente
-  useEffect(() => {
-    loadProdutos()
-  }, [])
-
-  const loadProdutos = async () => {
+  const loadProdutos = useCallback(async () => {
     try {
       // Buscar produtos organizados por motor/tipo
       const { data, error } = await supabase
@@ -83,7 +89,12 @@ export function NovoLeadForm({ onSuccess, onCancel }: NovoLeadFormProps) {
     } catch (error) {
       console.error('Erro ao carregar produtos:', error)
     }
-  }
+  }, [])
+
+  // Carregar produtos ao montar componente
+  useEffect(() => {
+    loadProdutos()
+  }, [loadProdutos])
 
   const getMotorDisplayName = (tipo: string) => {
     const motores = {
@@ -95,7 +106,7 @@ export function NovoLeadForm({ onSuccess, onCancel }: NovoLeadFormProps) {
       'fisico': '📦 Produto Físico',
       'parceria': '🤝 Parceria'
     }
-    return (motores as any)[tipo] || `📋 ${tipo}`
+    return (motores as Record<string, string>)[tipo] || `📋 ${tipo}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,9 +187,9 @@ export function NovoLeadForm({ onSuccess, onCancel }: NovoLeadFormProps) {
       if (onSuccess) {
         onSuccess()
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao criar lead:', err)
-      setError(err.message || 'Erro ao cadastrar lead')
+      setError(err instanceof Error ? err.message : 'Erro ao cadastrar lead')
     } finally {
       setLoading(false)
     }

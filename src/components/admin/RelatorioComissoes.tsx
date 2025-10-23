@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -68,7 +68,7 @@ export function RelatorioComissoes() {
     total_indicacoes: 0
   })
 
-  const loadMentorados = async () => {
+  const loadMentorados = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -81,9 +81,9 @@ export function RelatorioComissoes() {
     } catch (error) {
       console.error('Erro ao carregar mentorados:', error)
     }
-  }
+  }, [])
 
-  const loadRelatorio = async () => {
+  const loadRelatorio = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -142,21 +142,21 @@ export function RelatorioComissoes() {
 
       setResumo(novoResumo)
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao carregar relatório:', error)
-      setError(error.message || 'Erro ao carregar relatório')
+      setError((error as Error).message || 'Erro ao carregar relatório')
     } finally {
       setLoading(false)
     }
-  }
+  }, [filtros])
 
   useEffect(() => {
     loadMentorados()
-  }, [])
+  }, [loadMentorados])
 
   useEffect(() => {
     loadRelatorio()
-  }, [filtros])
+  }, [loadRelatorio])
 
   const handleExportCSV = () => {
     if (relatorio.length === 0) {

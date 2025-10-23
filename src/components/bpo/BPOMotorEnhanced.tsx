@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -139,7 +139,7 @@ export function BPOMotorEnhanced({
 
   // Estado para período selecionado e dados agrupados
   const [periodoSelecionado, setPeriodoSelecionado] = useState<'diario' | 'semanal' | 'mensal' | 'anual'>('mensal')
-  const [dadosAgrupados, setDadosAgrupados] = useState<any[]>([])
+  const [dadosAgrupados, setDadosAgrupados] = useState<DadosAgrupados[]>([])
 
   // Formulário Enhanced
   const [formData, setFormData] = useState({
@@ -155,103 +155,7 @@ export function BPOMotorEnhanced({
     tags: [] as string[]
   })
 
-  useEffect(() => {
-    loadData()
-  }, [motorType, filtros])
-
-  useEffect(() => {
-    if (movimentacoes.length > 0) {
-      agruparDadosPorPeriodo()
-    }
-  }, [movimentacoes, periodoSelecionado])
-
-  useEffect(() => {
-    if (showFormExternal !== undefined) {
-      setShowForm(showFormExternal)
-    }
-  }, [showFormExternal])
-
-  const loadData = async () => {
-    setLoading(true)
-    try {
-      await Promise.all([
-        loadMovimentacoes(),
-        loadContas(),
-        loadCategorias(),
-        loadDadosAnalyticos()
-      ])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const agruparDadosPorPeriodo = () => {
-    const movimentacoesOrdenadas = [...movimentacoes].sort((a, b) =>
-      new Date(b.data_movimento).getTime() - new Date(a.data_movimento).getTime()
-    )
-
-    const agrupamento: { [key: string]: DadosAgrupados } = {}
-
-    movimentacoesOrdenadas.forEach((mov) => {
-      const data = new Date(mov.data_movimento)
-      let chave = ''
-
-      switch (periodoSelecionado) {
-        case 'diario':
-          chave = data.toISOString().split('T')[0] // YYYY-MM-DD
-          break
-        case 'semanal':
-          const inicioSemana = new Date(data)
-          inicioSemana.setDate(data.getDate() - data.getDay()) // Domingo da semana
-          chave = inicioSemana.toISOString().split('T')[0]
-          break
-        case 'mensal':
-          chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}` // YYYY-MM
-          break
-        case 'anual':
-          chave = data.getFullYear().toString() // YYYY
-          break
-      }
-
-      if (!agrupamento[chave]) {
-        agrupamento[chave] = {
-          periodo: chave,
-          total_entradas: 0,
-          total_saidas: 0,
-          total_movimentacoes: 0,
-          movimentacoes: [],
-          faturamento: 0,
-          custos: 0,
-          lucro: 0,
-          margem_lucro: 0
-        }
-      }
-
-      agrupamento[chave].total_movimentacoes++
-      agrupamento[chave].movimentacoes.push(mov)
-
-      if (mov.tipo === 'entrada') {
-        agrupamento[chave].total_entradas += mov.valor
-        agrupamento[chave].faturamento += mov.valor
-      } else {
-        agrupamento[chave].total_saidas += mov.valor
-        agrupamento[chave].custos += mov.valor
-      }
-
-      agrupamento[chave].lucro = agrupamento[chave].faturamento - agrupamento[chave].custos
-      agrupamento[chave].margem_lucro = agrupamento[chave].faturamento > 0
-        ? (agrupamento[chave].lucro / agrupamento[chave].faturamento) * 100
-        : 0
-    })
-
-    const dadosOrdenados = Object.values(agrupamento).sort((a: DadosAgrupados, b: DadosAgrupados) =>
-      b.periodo.localeCompare(a.periodo)
-    )
-
-    setDadosAgrupados(dadosOrdenados)
-  }
-
-  const loadContas = async () => {
+  const loadContas = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('contas_bancarias')
@@ -264,9 +168,9 @@ export function BPOMotorEnhanced({
     } catch (error) {
       console.error('Erro ao carregar contas:', error)
     }
-  }
+  }, [])
 
-  const loadCategorias = async () => {
+  const loadCategorias = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('bpo_categorias')
@@ -279,9 +183,9 @@ export function BPOMotorEnhanced({
     } catch (error) {
       console.error('Erro ao carregar categorias:', error)
     }
-  }
+  }, [])
 
-  const getBusinessType = () => {
+  const getBusinessType = useCallback(() => {
     switch (motorType) {
       case 'mentoria':
         return 'mentoria'
@@ -305,9 +209,9 @@ export function BPOMotorEnhanced({
       default:
         return 'mentoria'
     }
-  }
+  }, [motorType])
 
-  const loadDadosAnalyticos = async () => {
+  const loadDadosAnalyticos = useCallback(async () => {
     try {
       const businessType = getBusinessType()
 
@@ -441,9 +345,9 @@ export function BPOMotorEnhanced({
         historico_mensal: []
       })
     }
-  }
+  }, [getBusinessType])
 
-  const loadMovimentacoes = async () => {
+  const loadMovimentacoes = useCallback(async () => {
     try {
       const businessType = getBusinessType()
 
@@ -487,7 +391,7 @@ export function BPOMotorEnhanced({
 
       const movimentacoesFormatted = movimentacoesData?.map(mov => ({
         ...mov,
-        conta_nome: mov.contas_bancarias?.nome || 'N/A'
+        conta_nome: (mov.contas_bancarias as { nome?: string })?.nome || 'N/A'
       })) || []
 
       setMovimentacoes(movimentacoesFormatted)
@@ -497,7 +401,104 @@ export function BPOMotorEnhanced({
     } catch (error) {
       console.error('Erro ao carregar movimentações:', error)
     }
-  }
+  }, [getBusinessType, filtros])
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      await Promise.all([
+        loadMovimentacoes(),
+        loadContas(),
+        loadCategorias(),
+        loadDadosAnalyticos()
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }, [loadMovimentacoes, loadContas, loadCategorias, loadDadosAnalyticos])
+
+  const agruparDadosPorPeriodo = useCallback(() => {
+    const movimentacoesOrdenadas = [...movimentacoes].sort((a, b) =>
+      new Date(b.data_movimento).getTime() - new Date(a.data_movimento).getTime()
+    )
+
+    const agrupamento: { [key: string]: DadosAgrupados } = {}
+
+    movimentacoesOrdenadas.forEach((mov) => {
+      const data = new Date(mov.data_movimento)
+      let chave = ''
+
+      switch (periodoSelecionado) {
+        case 'diario':
+          chave = data.toISOString().split('T')[0] // YYYY-MM-DD
+          break
+        case 'semanal':
+          const inicioSemana = new Date(data)
+          inicioSemana.setDate(data.getDate() - data.getDay()) // Domingo da semana
+          chave = inicioSemana.toISOString().split('T')[0]
+          break
+        case 'mensal':
+          chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}` // YYYY-MM
+          break
+        case 'anual':
+          chave = data.getFullYear().toString() // YYYY
+          break
+      }
+
+      if (!agrupamento[chave]) {
+        agrupamento[chave] = {
+          periodo: chave,
+          total_entradas: 0,
+          total_saidas: 0,
+          total_movimentacoes: 0,
+          movimentacoes: [],
+          faturamento: 0,
+          custos: 0,
+          lucro: 0,
+          margem_lucro: 0
+        }
+      }
+
+      agrupamento[chave].total_movimentacoes++
+      agrupamento[chave].movimentacoes.push(mov)
+
+      if (mov.tipo === 'entrada') {
+        agrupamento[chave].total_entradas += mov.valor
+        agrupamento[chave].faturamento += mov.valor
+      } else {
+        agrupamento[chave].total_saidas += mov.valor
+        agrupamento[chave].custos += mov.valor
+      }
+
+      agrupamento[chave].lucro = agrupamento[chave].faturamento - agrupamento[chave].custos
+      agrupamento[chave].margem_lucro = agrupamento[chave].faturamento > 0
+        ? (agrupamento[chave].lucro / agrupamento[chave].faturamento) * 100
+        : 0
+    })
+
+    const dadosOrdenados = Object.values(agrupamento).sort((a: DadosAgrupados, b: DadosAgrupados) =>
+      b.periodo.localeCompare(a.periodo)
+    )
+
+    setDadosAgrupados(dadosOrdenados)
+  }, [movimentacoes, periodoSelecionado])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  useEffect(() => {
+    if (movimentacoes.length > 0) {
+      agruparDadosPorPeriodo()
+    }
+  }, [agruparDadosPorPeriodo])
+
+  useEffect(() => {
+    if (showFormExternal !== undefined) {
+      setShowForm(showFormExternal)
+    }
+  }, [showFormExternal])
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1081,11 +1082,11 @@ export function BPOMotorEnhanced({
                             <span>{mov.conta_nome}</span>
                             <span>•</span>
                             <span>{formatDate(mov.data_movimento)}</span>
-                            {(mov as any).metodo_pagamento && (
+                            {(mov as { metodo_pagamento?: string }).metodo_pagamento && (
                               <>
                                 <span>•</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {(mov as any).metodo_pagamento.toUpperCase()}
+                                  {((mov as unknown) as { metodo_pagamento: string }).metodo_pagamento.toUpperCase()}
                                 </Badge>
                               </>
                             )}
@@ -1141,7 +1142,7 @@ export function BPOMotorEnhanced({
             motorType={motorType}
             motorName={motorName}
             motorColor={motorColor}
-            dadosAnalyticos={dadosAnalyticos}
+            dadosAnalyticos={dadosAnalyticos as any}
             dadosAgrupados={dadosAgrupados}
             periodoSelecionado={periodoSelecionado}
           />

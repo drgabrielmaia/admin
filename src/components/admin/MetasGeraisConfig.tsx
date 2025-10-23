@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,14 +59,10 @@ export function MetasGeraisConfig() {
     anual: 'Anual'
   }
 
-  useEffect(() => {
-    loadMetas()
-  }, [])
-
-  const loadMetas = async () => {
+  const loadMetas = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       // Carregar metas da tabela metas_gerais (novas metas da empresa)
       const { data: metasEmpresa, error: errorEmpresa } = await supabase
         .from('metas_gerais')
@@ -109,7 +105,11 @@ export function MetasGeraisConfig() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadMetas()
+  }, [loadMetas])
 
   const salvarMeta = async () => {
     if (!novaMeta.valor_meta || novaMeta.valor_meta <= 0) {
@@ -257,7 +257,7 @@ export function MetasGeraisConfig() {
               <Label className="text-sm font-medium">Tipo de Meta</Label>
               <select
                 value={novaMeta.tipo}
-                onChange={(e) => setNovaMeta(prev => ({ ...prev, tipo: e.target.value as any }))}
+                onChange={(e) => setNovaMeta(prev => ({ ...prev, tipo: e.target.value as 'individual' | 'equipe' | 'empresa' }))}
                 className="w-full mt-1 px-3 py-2 border rounded-lg bg-background"
               >
                 <option value="empresa">Meta da Empresa</option>
@@ -270,7 +270,7 @@ export function MetasGeraisConfig() {
               <Label className="text-sm font-medium">Categoria</Label>
               <select
                 value={novaMeta.categoria}
-                onChange={(e) => setNovaMeta(prev => ({ ...prev, categoria: e.target.value as any }))}
+                onChange={(e) => setNovaMeta(prev => ({ ...prev, categoria: e.target.value as 'leads' | 'vendas' | 'faturamento' | 'equipe' | 'evento' }))}
                 className="w-full mt-1 px-3 py-2 border rounded-lg bg-background"
               >
                 {Object.entries(categorias).map(([key, cat]) => (
@@ -283,7 +283,7 @@ export function MetasGeraisConfig() {
               <Label className="text-sm font-medium">Período</Label>
               <select
                 value={novaMeta.periodo}
-                onChange={(e) => setNovaMeta(prev => ({ ...prev, periodo: e.target.value as any }))}
+                onChange={(e) => setNovaMeta(prev => ({ ...prev, periodo: e.target.value as 'diaria' | 'semanal' | 'mensal' | 'anual' }))}
                 className="w-full mt-1 px-3 py-2 border rounded-lg bg-background"
               >
                 {Object.entries(periodos).map(([key, label]) => (
@@ -410,7 +410,7 @@ export function MetasGeraisConfig() {
             Nenhuma meta geral configurada
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            Configure metas como "R$ 50K por semana" ou "R$ 1M por mês" para motivar a equipe
+            Configure metas como &ldquo;R$ 50K por semana&rdquo; ou &ldquo;R$ 1M por mês&rdquo; para motivar a equipe
           </p>
         </div>
       )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -68,14 +68,10 @@ export function ProdutosManager() {
     status: 'ativo'
   })
 
-  useEffect(() => {
-    loadProdutos()
-  }, [])
-
-  const loadProdutos = async () => {
+  const loadProdutos = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       const { data, error } = await supabase
         .from('clinicas')
         .select('*')
@@ -103,7 +99,12 @@ export function ProdutosManager() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadProdutos()
+  }, [loadProdutos])
+
 
   const resetForm = () => {
     setFormData({
@@ -222,9 +223,9 @@ export function ProdutosManager() {
       }
 
       resetForm()
-    } catch (err: any) {
+    } catch (err) {
       console.error('Erro ao salvar produto:', err)
-      setError(err.message || 'Erro ao salvar produto')
+      setError((err as Error).message || 'Erro ao salvar produto')
     }
   }
 
@@ -570,7 +571,7 @@ export function ProdutosManager() {
                       </div>
 
                       {produto.descricao && (
-                        <p className="mt-2 text-sm text-slate-400 italic">"{produto.descricao}"</p>
+                        <p className="mt-2 text-sm text-slate-400 italic">&ldquo;{produto.descricao}&rdquo;</p>
                       )}
                     </div>
                     

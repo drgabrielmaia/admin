@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -52,12 +52,7 @@ export function VendasAprovacao() {
   const [vendaSelecionada, setVendaSelecionada] = useState<string | null>(null)
   const [vendaParaAprovar, setVendaParaAprovar] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadVendasPendentes()
-    loadProdutos()
-  }, [])
-
-  const loadProdutos = async () => {
+  const loadProdutos = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('produtos')
@@ -70,12 +65,12 @@ export function VendasAprovacao() {
     } catch (error) {
       console.error('Erro ao carregar produtos:', error)
     }
-  }
+  }, [])
 
-  const loadVendasPendentes = async () => {
+  const loadVendasPendentes = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       // Carregar chamadas com vendas pendentes de aprovação
       const { data: chamadasData, error: chamadasError } = await supabase
         .from('chamadas')
@@ -98,8 +93,8 @@ export function VendasAprovacao() {
       }
 
       console.log('🔍 Buscando leads convertidos...')
-      
-      // Carregar leads que passaram para vendas mas ainda não foram aprovados 
+
+      // Carregar leads que passaram para vendas mas ainda não foram aprovados
       const { data: leadsData, error: leadsError } = await supabase
         .from('leads')
         .select(`
@@ -124,15 +119,15 @@ export function VendasAprovacao() {
 
       console.log('📋 Leads convertidos encontrados:', leadsData)
       console.log('🔢 Total de leads convertidos:', leadsData?.length || 0)
-      
+
       // Log detalhado de cada lead
       leadsData?.forEach((lead, index) => {
         console.log(`📝 Lead ${index + 1}:`, {
           id: lead.id,
           nome: lead.nome,
           status: lead.status,
-          produto: (lead.produtos as any)?.nome || 'SEM PRODUTO',
-          tipo: (lead.produtos as any)?.tipo || 'N/A'
+          produto: (lead.produtos as { nome?: string })?.nome || 'SEM PRODUTO',
+          tipo: (lead.produtos as { tipo?: string })?.tipo || 'N/A'
         })
       })
 
@@ -140,27 +135,27 @@ export function VendasAprovacao() {
       let vendasFormatted: VendaPendente[] = []
       if (chamadasData && chamadasData.length > 0) {
         const closerIds = [...new Set(chamadasData.map(c => c.closer_id))]
-        const sdrIds = [...new Set(chamadasData.map(c => (c.leads as any)?.sdr_id).filter(Boolean))]
-        
+        const sdrIds = [...new Set(chamadasData.map(c => (c.leads as { sdr_id?: string })?.sdr_id).filter(Boolean))]
+
         // Buscar nomes dos closers e SDRs
         const { data: usuarios } = await supabase
           .from('users')
           .select('id, nome')
           .in('id', [...closerIds, ...sdrIds])
-        
+
         const usuariosMap = new Map(usuarios?.map(u => [u.id, u.nome]) || [])
-        
+
         // Formatar chamadas para o formato padrão
-        vendasFormatted = chamadasData.map((venda: any) => ({
-          id: venda.id,
-          tipo: 'chamada',
-          lead_nome: venda.leads?.nome || 'N/A',
-          closer_nome: usuariosMap.get(venda.closer_id) || 'N/A',
-          sdr_nome: usuariosMap.get(venda.leads?.sdr_id) || 'N/A',
-          valor: venda.valor || 0,
-          data_chamada: venda.data_chamada,
+        vendasFormatted = chamadasData.map((venda: Record<string, unknown>) => ({
+          id: venda.id as string,
+          tipo: 'chamada' as const,
+          lead_nome: (venda.leads as Record<string, unknown>)?.nome as string || 'N/A',
+          closer_nome: usuariosMap.get(venda.closer_id as string) || 'N/A',
+          sdr_nome: usuariosMap.get((venda.leads as Record<string, unknown>)?.sdr_id as string || '') || 'N/A',
+          valor: (venda.valor as number) || 0,
+          data_chamada: venda.data_chamada as string,
           observacoes: '',
-          duracao_minutos: venda.duracao_minutos || 0
+          duracao_minutos: (venda.duracao_minutos as number) || 0
         }))
       }
 
@@ -168,29 +163,29 @@ export function VendasAprovacao() {
       let leadsFormatted: VendaPendente[] = []
       if (leadsData && leadsData.length > 0) {
         const sdrIds = [...new Set(leadsData.map(l => l.sdr_id).filter(Boolean))]
-        
+
         // Buscar nomes dos SDRs (pode reutilizar usuários já carregados)
         const { data: sdrs } = await supabase
           .from('users')
           .select('id, nome')
           .in('id', sdrIds)
-        
+
         const sdrsMap = new Map(sdrs?.map(u => [u.id, u.nome]) || [])
-        
-        // Formatar leads para o formato padrão 
-        leadsFormatted = leadsData.map((lead: any) => ({
-          id: lead.id,
-          tipo: 'lead',
-          lead_nome: lead.nome || 'N/A',
-          closer_nome: 'Lead Direto',  // Leads convertidos não têm closer
-          sdr_nome: sdrsMap.get(lead.sdr_id) || 'N/A',
-          valor: lead.valor_estimado || 0,
-          data_chamada: lead.created_at,
+
+        // Formatar leads para o formato padrão
+        leadsFormatted = leadsData.map((lead: Record<string, unknown>) => ({
+          id: lead.id as string,
+          tipo: 'lead' as const,
+          lead_nome: (lead.nome as string) || 'N/A',
+          closer_nome: 'Lead Direto', // Leads convertidos não têm closer
+          sdr_nome: sdrsMap.get((lead.sdr_id as string) || '') || 'N/A',
+          valor: (lead.valor_estimado as number) || 0,
+          data_chamada: lead.created_at as string,
           observacoes: '',
           duracao_minutos: 0,
-          produto_id: lead.produto_id, // Incluir produto_id para pré-seleção
-          produto_nome: lead.produtos?.nome || 'Produto não identificado',
-          produto_tipo: lead.produtos?.tipo || 'N/A'
+          produto_id: lead.produto_id as string, // Incluir produto_id para pré-seleção
+          produto_nome: (lead.produtos as Record<string, unknown>)?.nome as string || 'Produto não identificado',
+          produto_tipo: (lead.produtos as Record<string, unknown>)?.tipo as string || 'N/A'
         }))
       }
 
@@ -199,7 +194,7 @@ export function VendasAprovacao() {
         .sort((a, b) => new Date(b.data_chamada).getTime() - new Date(a.data_chamada).getTime())
 
       setVendas(todasVendas)
-      
+
       // Pré-selecionar produtos para leads que já têm produto definido
       const preSelecoes: Record<string, string> = {}
       todasVendas.forEach(venda => {
@@ -217,7 +212,13 @@ export function VendasAprovacao() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadVendasPendentes()
+    loadProdutos()
+  }, [loadVendasPendentes, loadProdutos])
+
 
   const aprovarVenda = async (vendaId: string) => {
     console.log('🚀 INÍCIO - Aprovando venda:', vendaId)

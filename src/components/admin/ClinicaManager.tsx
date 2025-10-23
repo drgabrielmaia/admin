@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -89,14 +89,10 @@ export function ClinicaManager() {
     observacoes: ''
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       // Carregar transações
       const { data: transacoesData, error: transacoesError } = await supabase
         .from('clinica_transacoes')
@@ -120,7 +116,11 @@ export function ClinicaManager() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const resetForm = () => {
     setFormData({
@@ -212,9 +212,10 @@ export function ClinicaManager() {
       // Recarregar resumo
       loadData()
       resetForm()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao salvar transação:', err)
-      setError(err.message || 'Erro ao salvar transação')
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar transação'
+      setError(errorMessage)
     }
   }
 
@@ -376,7 +377,7 @@ export function ClinicaManager() {
       {/* Controles */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
         <div className="flex items-center space-x-4">
-          <Select value={filtroTipo} onValueChange={(value: any) => setFiltroTipo(value)}>
+          <Select value={filtroTipo} onValueChange={(value: 'todos' | 'entrada' | 'saida') => setFiltroTipo(value)}>
             <SelectTrigger className="w-48 bg-slate-800 border-slate-700">
               <SelectValue />
             </SelectTrigger>
@@ -408,7 +409,7 @@ export function ClinicaManager() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tipo" className="text-slate-300">Tipo *</Label>
-                  <Select value={formData.tipo} onValueChange={(value: any) => handleChange('tipo', value)}>
+                  <Select value={formData.tipo} onValueChange={(value: 'entrada' | 'saida') => handleChange('tipo', value)}>
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -580,7 +581,7 @@ export function ClinicaManager() {
                       </div>
 
                       {transacao.observacoes && (
-                        <p className="mt-3 text-sm text-slate-400 italic">"{transacao.observacoes}"</p>
+                        <p className="mt-3 text-sm text-slate-400 italic">&ldquo;{transacao.observacoes}&rdquo;</p>
                       )}
                     </div>
                     

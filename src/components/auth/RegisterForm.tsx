@@ -38,8 +38,8 @@ export function RegisterForm({ onToggleLogin }: RegisterFormProps) {
 
     try {
       await register(email, password, nome, funcao as UserRole, dataNascimento || undefined)
-    } catch (err: any) {
-      setError(err.message || 'Erro no cadastro')
+    } catch (err) {
+      setError((err as Error).message || 'Erro no cadastro')
     } finally {
       setLoading(false)
     }
@@ -113,7 +113,7 @@ export function RegisterForm({ onToggleLogin }: RegisterFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="funcao">Função</Label>
-            <Select value={funcao} onValueChange={(value: string) => setFuncao(value as any)}>
+            <Select value={funcao} onValueChange={(value: string) => setFuncao(value as UserRole)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione sua função" />
               </SelectTrigger>

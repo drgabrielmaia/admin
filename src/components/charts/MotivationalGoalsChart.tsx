@@ -1,20 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ModernChart } from './ModernChart'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { 
-  Target, 
-  TrendingUp, 
-  Calendar, 
+import {
+  Target,
+  TrendingUp,
+  Calendar,
   Clock,
   Zap,
   Trophy,
-  AlertTriangle
+  AlertTriangle,
+  LucideIcon
 } from 'lucide-react'
+import { TooltipItem } from 'chart.js'
 import clsx from 'clsx'
 
 interface GoalPeriod {
@@ -26,7 +28,7 @@ interface GoalPeriod {
   daysLeft: number
   trend: number
   color: string
-  icon: any
+  icon: LucideIcon
 }
 
 export function MotivationalGoalsChart() {
@@ -34,11 +36,7 @@ export function MotivationalGoalsChart() {
   const [goals, setGoals] = useState<GoalPeriod[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadGoalsFromDatabase()
-  }, [user?.id])
-
-  const loadGoalsFromDatabase = async () => {
+  const loadGoalsFromDatabase = useCallback(async () => {
     if (!user?.id) {
       setLoading(false)
       return
@@ -146,7 +144,11 @@ export function MotivationalGoalsChart() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id, user?.funcao])
+
+  useEffect(() => {
+    loadGoalsFromDatabase()
+  }, [loadGoalsFromDatabase])
 
   const chartData = {
     labels: goals.map(g => g.label),
@@ -213,7 +215,7 @@ export function MotivationalGoalsChart() {
         padding: 16,
         displayColors: true,
         callbacks: {
-          label: function(context: any) {
+          label: function(context: TooltipItem<'line'>) {
             if (context.datasetIndex === 0) {
               const goal = goals[context.dataIndex]
               return [
@@ -254,7 +256,7 @@ export function MotivationalGoalsChart() {
             size: 12,
             weight: '500'
           },
-          callback: function(value: any) {
+          callback: function(value: string | number) {
             return value + '%'
           }
         }

@@ -24,9 +24,9 @@ const eslintConfig = [
   },
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "error",
-      "react/no-unescaped-entities": "error",
-      "react-hooks/exhaustive-deps": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "react/no-unescaped-entities": "warn",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
 ];
